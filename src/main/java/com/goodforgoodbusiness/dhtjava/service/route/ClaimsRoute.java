@@ -15,14 +15,15 @@ import com.goodforgoodbusiness.dhtjava.Pattern;
 import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
 import com.goodforgoodbusiness.dhtjava.crypto.KeyEncoder;
 import com.goodforgoodbusiness.dhtjava.crypto.Symmetric;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABEException;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.dhtjava.keys.KeyStore;
+import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
+import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.EncryptedClaim;
 import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.SubmittableClaim;
 import com.google.gson.JsonObject;
+import com.google.inject.Inject;
 
 import spark.Request;
 import spark.Response;
@@ -43,10 +44,11 @@ public class ClaimsRoute implements Route {
 	private static final Logger log = Logger.getLogger(ClaimsRoute.class);
 	
 	private final Crypto crypto;
-	private final KeyStore keyStore;
+	private final ShareKeyStore keyStore;
 	private final DHTStore dht;
 	
-	public ClaimsRoute(DHTStore dht, KeyStore keyStore, Crypto crypto) {
+	@Inject
+	public ClaimsRoute(DHTStore dht, ShareKeyStore keyStore, Crypto crypto) {
 		this.dht = dht;
 		this.keyStore = keyStore;
 		this.crypto = crypto;
@@ -102,7 +104,7 @@ public class ClaimsRoute implements Route {
 						)
 					);
 				}
-				catch (ABEException e) {
+				catch (KPABEException e) {
 					throw new RuntimeException(e); // XXX hmmm.
 				}
 

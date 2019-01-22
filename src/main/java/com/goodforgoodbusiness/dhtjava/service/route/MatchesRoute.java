@@ -14,13 +14,14 @@ import com.goodforgoodbusiness.dhtjava.DHTApp;
 import com.goodforgoodbusiness.dhtjava.Pattern;
 import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
 import com.goodforgoodbusiness.dhtjava.crypto.CryptoException;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABEException;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.dhtjava.keys.KeyStore;
+import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
+import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.StoredClaim;
 import com.goodforgoodbusiness.shared.web.error.BadRequestException;
+import com.google.inject.Inject;
 
 import spark.Request;
 import spark.Response;
@@ -30,10 +31,11 @@ public class MatchesRoute implements Route {
 	private static final Logger log = Logger.getLogger(MatchesRoute.class);
 	
 	private final Crypto crypto;
-	private final KeyStore keyStore;
+	private final ShareKeyStore keyStore;
 	private final DHTStore dht;
 	
-	public MatchesRoute(DHTStore dht, KeyStore keyStore, Crypto crypto) {
+	@Inject
+	public MatchesRoute(DHTStore dht, ShareKeyStore keyStore, Crypto crypto) {
 		this.dht = dht;
 		this.keyStore = keyStore;
 		this.crypto = crypto;
@@ -70,7 +72,7 @@ public class MatchesRoute implements Route {
 		try {
 			// XXX create temporary key
 			// this key should be able to decrypt the pointer
-			var shareKey = DHTApp.abe.shareKey(pattern); 
+			var shareKey = DHTApp.kpabe.shareKey(pattern); 
 			
 			var result = crypto.decryptPointer(data, shareKey);
 			if (result != null) {
@@ -81,7 +83,7 @@ public class MatchesRoute implements Route {
 				return null;
 			}
 		}
-		catch (InvalidKeyException | ABEException e) {
+		catch (InvalidKeyException | KPABEException e) {
 			// unsuccessful decryption returns null
 			// if an Exception is thrown this is a legitimate error.
 			log.error("Error decrypting pointer", e);

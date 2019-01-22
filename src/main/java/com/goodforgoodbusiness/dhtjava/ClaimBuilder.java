@@ -15,6 +15,7 @@ import com.goodforgoodbusiness.shared.model.Signature;
 import com.goodforgoodbusiness.shared.model.StoredClaim;
 import com.goodforgoodbusiness.shared.model.SubmittableClaim;
 import com.goodforgoodbusiness.shared.model.Contents.ContentType;
+import com.google.inject.Singleton;
 
 import static com.goodforgoodbusiness.dhtjava.crypto.Signing.sign;
 import static com.goodforgoodbusiness.shared.EncodeUtil.*;
@@ -23,6 +24,7 @@ import static com.goodforgoodbusiness.dhtjava.crypto.Signing.generateKeyPair;
 /**
  * Builds a storable/encryptable claim out of what's submitted.
  */
+@Singleton
 public class ClaimBuilder {
 	private static final String DID = "did:abcd1";
 	private static final KeyPair IDENTITY = generateKeyPair();

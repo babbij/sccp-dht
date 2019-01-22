@@ -1,16 +1,16 @@
-package com.goodforgoodbusiness.dhtjava.keys;
+package com.goodforgoodbusiness.dhtjava.dht.share;
 
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.sparql.util.NodeFactoryExtra.createLiteralNode;
 
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABE;
-import com.goodforgoodbusiness.dhtjava.keys.impl.MongoKeyStore;
+import com.goodforgoodbusiness.dhtjava.dht.share.impl.MongoKeyStore;
+import com.goodforgoodbusiness.kpabe.KPABEInstance;
 
 public class KeyStoreTest {
 	public static void main(String[] args) throws Exception {
-		var abe = ABE.newKeys();
+		var abe = KPABEInstance.newKeys();
 		
 		var s = createURI("https://twitter.com/ijmad8x");
 		var p = createURI("http://xmlns.com/foaf/0.1/name");

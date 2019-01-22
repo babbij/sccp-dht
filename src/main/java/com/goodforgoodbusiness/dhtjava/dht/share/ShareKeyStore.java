@@ -1,16 +1,16 @@
-package com.goodforgoodbusiness.dhtjava.keys;
+package com.goodforgoodbusiness.dhtjava.dht.share;
 
 import java.security.KeyPair;
 import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
 
-public abstract class KeyStore {	
+public abstract class ShareKeyStore {	
 	public final void saveKey(Triple triple, KeyPair shareKey) {		
-		saveKey(new KeyIndex(triple), new StoredKey(shareKey));
+		saveKey(new ShareKeyIndex(triple), new StoredShareKey(shareKey));
 	}
 	
-	protected abstract void saveKey(KeyIndex index, StoredKey storedKey);
+	protected abstract void saveKey(ShareKeyIndex index, StoredShareKey storedKey);
 	
 	/**
 	 * Find keys for a Triple search pattern.
@@ -21,7 +21,7 @@ public abstract class KeyStore {
 	 * narrower searches.  
 	 */
 	public final Stream<KeyPair> findKey(Triple triple) {
-		return findKey(new KeyIndex(triple)).map(storedKey -> storedKey.toKeyPair());
+		return findKey(new ShareKeyIndex(triple)).map(storedKey -> storedKey.toKeyPair());
 	}
 	
 	/**
@@ -32,5 +32,5 @@ public abstract class KeyStore {
 	 * more specific patterns, but also narrow keys may give partial access to
 	 * narrower searches.  
 	 */
-	protected abstract Stream<StoredKey> findKey(KeyIndex index);
+	protected abstract Stream<StoredShareKey> findKey(ShareKeyIndex index);
 }

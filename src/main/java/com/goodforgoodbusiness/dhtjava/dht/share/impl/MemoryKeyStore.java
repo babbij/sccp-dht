@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.dhtjava.keys.impl;
+package com.goodforgoodbusiness.dhtjava.dht.share.impl;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Stream.concat;
@@ -10,17 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.goodforgoodbusiness.dhtjava.keys.KeyIndex;
-import com.goodforgoodbusiness.dhtjava.keys.KeyStore;
-import com.goodforgoodbusiness.dhtjava.keys.StoredKey;
+import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyIndex;
+import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
+import com.goodforgoodbusiness.dhtjava.dht.share.StoredShareKey;
+import com.google.inject.Singleton;
 
-public class MemoryKeyStore extends KeyStore {
-	private final Map<String, List<StoredKey>> bySubject = new HashMap<>();
-	private final Map<String, List<StoredKey>> byPredicate = new HashMap<>();
-	private final Map<String, List<StoredKey>> byObject = new HashMap<>();
+@Singleton
+public class MemoryKeyStore extends ShareKeyStore {
+	private final Map<String, List<StoredShareKey>> bySubject = new HashMap<>();
+	private final Map<String, List<StoredShareKey>> byPredicate = new HashMap<>();
+	private final Map<String, List<StoredShareKey>> byObject = new HashMap<>();
 	
 	@Override
-	public void saveKey(KeyIndex idx, StoredKey storedKey) {
+	public void saveKey(ShareKeyIndex idx, StoredShareKey storedKey) {
 		if (idx.getSubject() != null) {
 			var bySubjectIdx = bySubject.get(idx.getSubject());
 			if (bySubjectIdx == null) {
@@ -53,8 +55,8 @@ public class MemoryKeyStore extends KeyStore {
 	}
 
 	@Override
-	public Stream<StoredKey> findKey(KeyIndex idx) {
-		var seen = new HashSet<StoredKey>(); // suppress duplicates
+	public Stream<StoredShareKey> findKey(ShareKeyIndex idx) {
+		var seen = new HashSet<StoredShareKey>(); // suppress duplicates
 		
 		return 
 			concat(

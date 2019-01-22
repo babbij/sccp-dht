@@ -1,13 +1,13 @@
-package com.goodforgoodbusiness.dhtjava.keys;
+package com.goodforgoodbusiness.dhtjava.dht.share;
 
 import java.security.KeyPair;
 
-import com.goodforgoodbusiness.dhtjava.crypto.abe.key.ABEPublicKey;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.key.ABEShareKey;
+import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
+import com.goodforgoodbusiness.kpabe.key.KPABEShareKey;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class StoredKey {
+public class StoredShareKey {
 	@Expose
 	@SerializedName("public")
 	private String publicKey;
@@ -16,7 +16,7 @@ public class StoredKey {
 	@SerializedName("share")
 	private String shareKey;
 
-	public StoredKey(KeyPair pair) {
+	public StoredShareKey(KeyPair pair) {
 		this.publicKey = pair.getPublic().toString();
 		this.shareKey = pair.getPrivate().toString();
 	}
@@ -27,6 +27,6 @@ public class StoredKey {
 	}
 
 	public KeyPair toKeyPair() {
-		return new KeyPair(new ABEPublicKey(publicKey), new ABEShareKey(shareKey));
+		return new KeyPair(new KPABEPublicKey(publicKey), new KPABEShareKey(shareKey));
 	}
 }

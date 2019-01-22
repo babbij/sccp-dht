@@ -11,7 +11,9 @@ import org.apache.log4j.Logger;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.EncryptedClaim;
+import com.google.inject.Singleton;
 
+@Singleton
 public class MemoryDHTStore implements DHTStore {
 	private static final Logger log = Logger.getLogger(MemoryDHTStore.class);
 	

@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 
 import javax.crypto.SecretKey;
 
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABE;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABEException;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.key.ABEPublicKey;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.key.ABESecretKey;
+import com.goodforgoodbusiness.kpabe.KPABEException;
+import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
+import com.goodforgoodbusiness.kpabe.key.KPABESecretKey;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Contents;
 import com.goodforgoodbusiness.shared.model.EncryptedClaim;
@@ -21,28 +21,28 @@ import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.StoredClaim;
 
 public class Crypto {
-	private final ABE abe;
+	private final KPABEInstance kpabe;
 	
 	public Crypto(String publicKey, String secretKey) throws InvalidKeyException {
-		this(ABE.forKeys(
-			new ABEPublicKey(publicKey),
-			new ABESecretKey(secretKey)
+		this(KPABEInstance.forKeys(
+			new KPABEPublicKey(publicKey),
+			new KPABESecretKey(secretKey)
 		));
 	}
 	
-	public Crypto(ABE abe) {
-		this.abe = abe;
+	public Crypto(KPABEInstance kpabe) {
+		this.kpabe = kpabe;
 	}
 	
-	public String encryptPointer(Pointer pointer, Stream<String> attributes) throws ABEException {
-		return abe.encrypt(
+	public String encryptPointer(Pointer pointer, Stream<String> attributes) throws KPABEException {
+		return kpabe.encrypt(
 			JSON.encodeToString(pointer),
 			attributes.collect( joining( "|" ) )
 		);
 	}
 	
-	public Pointer decryptPointer(String data, KeyPair shareKey) throws ABEException, InvalidKeyException {
-		var decrypted = ABE.decrypt(data, shareKey);
+	public Pointer decryptPointer(String data, KeyPair shareKey) throws KPABEException, InvalidKeyException {
+		var decrypted = KPABEInstance.decrypt(data, shareKey);
 		
 		if (decrypted != null) {
 			// successful decryption

@@ -8,7 +8,7 @@ import org.apache.jena.sparql.util.NodeFactoryExtra;
 
 import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
 import com.goodforgoodbusiness.dhtjava.crypto.Symmetric;
-import com.goodforgoodbusiness.dhtjava.crypto.abe.ABE;
+import com.goodforgoodbusiness.kpabe.KPABEInstance;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Link;
 import com.goodforgoodbusiness.shared.model.Link.RelType;
@@ -16,7 +16,7 @@ import com.goodforgoodbusiness.shared.model.SubmittableClaim;
 
 public class ClaimBuilderTest {
 	public static void main(String[] args) throws Exception {
-		Crypto crypto = new Crypto(ABE.newKeys());
+		Crypto crypto = new Crypto(KPABEInstance.newKeys());
 		
 		SecretKey key = Symmetric.generateKey();
 		

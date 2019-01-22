@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.dhtjava.keys;
+package com.goodforgoodbusiness.dhtjava.dht.share;
 
 import static com.goodforgoodbusiness.shared.TripleUtil.valueOf;
 
@@ -7,7 +7,7 @@ import org.apache.jena.graph.Triple;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class KeyIndex {
+public class ShareKeyIndex {
 	@Expose
 	@SerializedName("subject")
 	
@@ -21,7 +21,7 @@ public class KeyIndex {
 	@SerializedName("object")
 	private final String object;
 	
-	public KeyIndex(Triple triple) {
+	public ShareKeyIndex(Triple triple) {
 		this.subject = valueOf(triple.getSubject());
 		this.predicate = valueOf(triple.getPredicate());
 		this.object = valueOf(triple.getObject());
@@ -54,11 +54,11 @@ public class KeyIndex {
 			return true;
 		}
 		
-		if (!(o instanceof KeyIndex)) {
+		if (!(o instanceof ShareKeyIndex)) {
 			return false;
 		}
 		
-		KeyIndex other = (KeyIndex)o;
+		ShareKeyIndex other = (ShareKeyIndex)o;
 		
 		return
 			((subject != null) ? subject.equals(other.subject) : (other.subject == null)) && 
