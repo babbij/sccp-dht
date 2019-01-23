@@ -1,21 +1,21 @@
-package com.goodforgoodbusiness.dhtjava.crypto;
+package com.goodforgoodbusiness.dhtjava.crypto.primitive;
 
-import static com.goodforgoodbusiness.dhtjava.crypto.Symmetric.decrypt;
-import static com.goodforgoodbusiness.dhtjava.crypto.Symmetric.encrypt;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.SymmetricEncryption;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableSecretKey;
 
-import com.goodforgoodbusiness.dhtjava.crypto.KeyEncoder;
-import com.goodforgoodbusiness.dhtjava.crypto.Symmetric;
-
-public class SymmetricTest {
+public class SymmetricEncryptionTest {
 	public static void main(String[] args) throws Exception {
-		var key = Symmetric.generateKey();
+		// create
+		EncodeableSecretKey key = SymmetricEncryption.createKey();
 		
-		var key64 = KeyEncoder.encodeKey(key);
-		System.out.println(key64);
-
-		var encrypted = encrypt(key, "Hello World this is a test of doing some encryption");
-        System.out.println(encrypted);
-
-        System.out.println(decrypt(KeyEncoder.decodeSecretKey(key64), encrypted));
+		var ciphertext = SymmetricEncryption.encrypt("hello world", key);
+		System.out.println(ciphertext);
+		
+		System.out.println(key.toEncodedString());
+		
+		// decode
+		var key2 = new EncodeableSecretKey(key.toEncodedString());
+		
+		System.out.println(SymmetricEncryption.decrypt(ciphertext, key2));
 	}
 }

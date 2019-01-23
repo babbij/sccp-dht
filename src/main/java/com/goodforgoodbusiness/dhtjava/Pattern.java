@@ -1,13 +1,15 @@
 package com.goodforgoodbusiness.dhtjava;
 
-import static com.goodforgoodbusiness.shared.EncodeUtil.cborDigestString;
+import static com.goodforgoodbusiness.shared.Hash.sha256;
+import static com.goodforgoodbusiness.shared.TripleUtil.toValueArray;
 import static org.apache.jena.graph.Node.ANY;
 
 import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.shared.TripleUtil;
+import com.goodforgoodbusiness.shared.CBOR;
+import com.goodforgoodbusiness.shared.Hex;
 
 public class Pattern {
 	private static final String HASH_PREFIX = "a";
@@ -20,7 +22,7 @@ public class Pattern {
 			// prefixing 'a' here makes all signatures compatible
 			// with OpenABE which doesn't like attributes beginning with digits
 			//it also gives us an opportunity to version the hash!		
-			return HASH_PREFIX + cborDigestString( TripleUtil.toValueArray(pattern) );
+			return HASH_PREFIX + Hex.encode(sha256(CBOR.forObject(toValueArray(pattern))));
 		}
 		catch (Exception e) {
 			throw new PatternException("Pointer creation error", e);

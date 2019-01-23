@@ -1,14 +1,12 @@
 package com.goodforgoodbusiness.dhtjava;
 
-import javax.crypto.SecretKey;
-
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
-import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
-import com.goodforgoodbusiness.dhtjava.crypto.Symmetric;
-import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.dhtjava.crypto.Identity;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.AsymmetricEncryption;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Link;
 import com.goodforgoodbusiness.shared.model.Link.RelType;
@@ -16,9 +14,11 @@ import com.goodforgoodbusiness.shared.model.SubmittableClaim;
 
 public class ClaimBuilderTest {
 	public static void main(String[] args) throws Exception {
-		Crypto crypto = new Crypto(KPABEInstance.newKeys());
+		var kp = AsymmetricEncryption.createKeyPair();
+		var id = new Identity("foo", kp.getPrivate().toEncodedString(), kp.getPublic().toEncodedString());
 		
-		SecretKey key = Symmetric.generateKey();
+		var crypter = new ClaimCrypter();
+		var claimBuilder = new ClaimBuilder(id);
 		
 		var submittedClaim = new SubmittableClaim();
 		
@@ -36,16 +36,16 @@ public class ClaimBuilderTest {
 			RelType.CAUSED_BY
 		));
 		
-		var storedClaim = ClaimBuilder.buildFrom(submittedClaim);
+		var storedClaim = claimBuilder.buildFrom(submittedClaim);
 		
 		var storedJson = JSON.encodeToString(storedClaim);
 		System.out.println(storedJson);
 		
-		var encryptedClaim = crypto.encryptClaim(storedClaim, key);
+		var encryptedClaim = crypter.encrypt(storedClaim);
 		String encryptedJson = JSON.encodeToString(encryptedClaim);
 		System.out.println(encryptedJson);
 		
-		var storedClaim2 = crypto.decryptClaim(encryptedClaim, key);
+		var storedClaim2 = crypter.decrypt(encryptedClaim);
 		System.out.println(storedClaim.getId());
 		System.out.println(storedClaim2.getId());
 	}

@@ -1,28 +1,22 @@
-package com.goodforgoodbusiness.dhtjava.crypto;
+package com.goodforgoodbusiness.dhtjava.crypto.primitive;
 
-import com.goodforgoodbusiness.dhtjava.crypto.KeyEncoder;
-import com.goodforgoodbusiness.dhtjava.crypto.Signing;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.AsymmetricEncryption;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeablePrivateKey;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeablePublicKey;
 
-public class SigningTest {
+public class AsymmetricEncryptionTest {
 	public static void main(String[] args) throws Exception {
-		var keys = Signing.generateKeyPair();
+		var keyPair = AsymmetricEncryption.createKeyPair();
 		
-		System.out.println(keys.getPrivate().getClass());
+		System.out.println(keyPair.getPrivate().toEncodedString());
+		System.out.println(keyPair.getPublic().toEncodedString());
 		
-		var encPrivKey = KeyEncoder.encodeKey(keys.getPrivate());
-		System.out.println(encPrivKey);
-		
-		var privKey = KeyEncoder.decodePrivateKey(encPrivKey);
-		
-		var signature = Signing.sign("hello world", privKey);
+		var privateKey = new EncodeablePrivateKey( keyPair.getPrivate().toEncodedString() );
+		var signature = AsymmetricEncryption.sign("hello world", privateKey );
 		System.out.println(signature);
-		
-		var encPubKey = KeyEncoder.encodeKey(keys.getPublic());
-		System.out.println(encPubKey);
-		
-		var pubKey = KeyEncoder.decodePublicKey(encPubKey);
-		
-		var result = Signing.verify("hello world", signature, pubKey);
+
+		var publicKey = new EncodeablePublicKey( keyPair.getPublic().toEncodedString() );
+		var result = AsymmetricEncryption.verify("hello world", signature, publicKey );
 		System.out.println(result);
 	}
 }

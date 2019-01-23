@@ -1,7 +1,7 @@
-package com.goodforgoodbusiness.dhtjava.crypto;
+package com.goodforgoodbusiness.dhtjava.crypto.primitive;
 
-public class CryptoException extends Exception {
-	public CryptoException(String message, Throwable cause) {
+public class EncryptionException extends Exception {
+	public EncryptionException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

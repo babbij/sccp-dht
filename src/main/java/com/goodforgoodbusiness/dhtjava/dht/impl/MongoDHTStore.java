@@ -12,6 +12,7 @@ import org.bson.Document;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.EncryptedClaim;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.mongodb.ConnectionString;
@@ -31,6 +32,7 @@ public class MongoDHTStore implements DHTStore {
 	private final ConnectionString connectionString;
 	private final MongoDatabase database;
 	
+	@Inject
 	public MongoDHTStore(@Named("dht.connectionUrl") String connectionUrl) {
 		this.connectionString = new ConnectionString(connectionUrl);
 		this.client =  MongoClients.create(connectionString);

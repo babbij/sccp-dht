@@ -1,16 +1,18 @@
-package com.goodforgoodbusiness.dhtjava.dht.share;
+package com.goodforgoodbusiness.dhtjava.crypto.store;
 
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.sparql.util.NodeFactoryExtra.createLiteralNode;
 
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.dhtjava.dht.share.impl.MongoKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MongoKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
 
-public class KeyStoreTest {
+public class ShareKeyStoreTest {
 	public static void main(String[] args) throws Exception {
 		var abe = KPABEInstance.newKeys();
+		var shareKey = new EncodeableShareKey(abe.shareKey("foo"));
 		
 		var s = createURI("https://twitter.com/ijmad8x");
 		var p = createURI("http://xmlns.com/foaf/0.1/name");
@@ -19,12 +21,12 @@ public class KeyStoreTest {
 
 		var ks = new MongoKeyStore("mongodb://localhost:27017/keys");
 		
-		ks.saveKey(new Triple(s, p, o), abe.shareKey("foo"));
+		ks.saveKey(new ShareKeyIndex(new Triple(s, p, o)), shareKey);
 		
-		ks.findKey(new Triple(s, p, o)).forEach(
-			shareKey -> {
-				System.out.println(shareKey.getPublic());
-				System.out.println(shareKey.getPrivate());
+		ks.findKeys(new ShareKeyIndex(new Triple(s, p, o))).forEach(
+			foundKey -> {
+				System.out.println(foundKey.toKeyPair().getPublic());
+				System.out.println(foundKey.toKeyPair().getPrivate());
 				System.out.println();
 			}
 		);

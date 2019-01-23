@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.dhtjava.dht.share.impl;
+package com.goodforgoodbusiness.dhtjava.crypto.store.impl;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
@@ -12,10 +12,11 @@ import java.util.stream.Stream;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyIndex;
-import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
-import com.goodforgoodbusiness.dhtjava.dht.share.StoredShareKey;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyIndex;
+import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
 import com.goodforgoodbusiness.shared.JSON;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.mongodb.ConnectionString;
@@ -25,13 +26,14 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 
 @Singleton
-public class MongoKeyStore extends ShareKeyStore {
+public class MongoKeyStore implements ShareKeyStore {
 	private static final String CL_KEYS = "keys";
 	
 	private final MongoClient client;
 	private final ConnectionString connectionString;
 	private final MongoDatabase database;
 	
+	@Inject
 	public MongoKeyStore(@Named("keystore.connectionUrl") String connectionUrl) {
 		this.connectionString = new ConnectionString(connectionUrl);
 		this.client =  MongoClients.create(connectionString);
@@ -47,19 +49,19 @@ public class MongoKeyStore extends ShareKeyStore {
 	}
 	
 	@Override
-	public void saveKey(ShareKeyIndex idx, StoredShareKey storedKey) {
+	public void saveKey(ShareKeyIndex idx, EncodeableShareKey key) {
 		database
 			.getCollection(CL_KEYS)
 			.insertOne(
 				Document
 					.parse(JSON.encodeToString(idx))
-					.append("key", Document.parse(JSON.encodeToString(storedKey)))
+					.append("key", Document.parse(JSON.encodeToString(key)))
 			)
 		;
 	}
 
 	@Override
-	public Stream<StoredShareKey> findKey(ShareKeyIndex idx) {
+	public Stream<EncodeableShareKey> findKeys(ShareKeyIndex idx) {
 		var filters = new LinkedList<Bson>();
 		
 		if (idx.getSubject() != null) {
@@ -82,7 +84,7 @@ public class MongoKeyStore extends ShareKeyStore {
 					.spliterator(),
 				true
 			)
-			.map(doc -> JSON.decode( ((Document)doc.get("key")).toJson() , StoredShareKey.class))
+			.map(doc -> JSON.decode( ((Document)doc.get("key")).toJson() , EncodeableShareKey.class))
 			.filter(Objects::nonNull)
 		;
 	}

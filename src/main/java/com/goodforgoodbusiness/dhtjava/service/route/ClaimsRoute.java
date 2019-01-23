@@ -12,14 +12,11 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.dhtjava.ClaimBuilder;
 import com.goodforgoodbusiness.dhtjava.Pattern;
-import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
-import com.goodforgoodbusiness.dhtjava.crypto.KeyEncoder;
-import com.goodforgoodbusiness.dhtjava.crypto.Symmetric;
+import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.EncryptedClaim;
 import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.SubmittableClaim;
 import com.google.gson.JsonObject;
@@ -29,45 +26,44 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class ClaimsRoute implements Route {
-	private static final SecureRandom SRANDOM;
+public class ClaimsRoute implements Route {	
+	private static final Logger log = Logger.getLogger(ClaimsRoute.class);
+	
+	private static final SecureRandom RANDOM;
 	
 	static {
 		try {
-			SRANDOM = SecureRandom.getInstance("SHA1PRNG");
+			RANDOM = SecureRandom.getInstanceStrong();
 		}
 		catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException("Could not load SecureRandom provider", e);
+			throw new RuntimeException(e);
 		}
 	}
 	
-	private static final Logger log = Logger.getLogger(ClaimsRoute.class);
-	
-	private final Crypto crypto;
-	private final ShareKeyStore keyStore;
+	private final ClaimBuilder builder;
+	private final PointerCrypter pointerCrypto;
 	private final DHTStore dht;
 	
 	@Inject
-	public ClaimsRoute(DHTStore dht, ShareKeyStore keyStore, Crypto crypto) {
+	public ClaimsRoute(ClaimBuilder builder, DHTStore dht, PointerCrypter pointerCrypto) {
+		this.builder = builder;
 		this.dht = dht;
-		this.keyStore = keyStore;
-		this.crypto = crypto;
+		this.pointerCrypto = pointerCrypto;
 	}
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
 		log.info("Processing claim post");
 		
-		var claim = ClaimBuilder.buildFrom(
+		var claim = builder.buildFrom(
 			JSON.decode(req.body(), SubmittableClaim.class)
 		);
 		
 		log.info("Claim id = " + claim.getId());
 		
-		// create a new symmetric key for this claim
-		var claimKey = Symmetric.generateKey();
+		var crypter = new ClaimCrypter(); // with new symmetric key for claim
+		var encryptedClaim = crypter.encrypt(claim);
 		
-		EncryptedClaim encryptedClaim = crypto.encryptClaim(claim, claimKey);
 		dht.putClaim(encryptedClaim);
 		
 		// generate combinations for pointers
@@ -94,11 +90,11 @@ public class ClaimsRoute implements Route {
 				try {
 					dht.putPointer(
 						pattern,
-						crypto.encryptPointer(
+						pointerCrypto.encrypt(
 							new Pointer(
 								encryptedClaim.getId(),
-								KeyEncoder.encodeKey(claimKey),
-								SRANDOM.nextLong()
+								crypter.getSecretKey().toEncodedString(),
+								RANDOM.nextLong()
 							),
 							attributes
 						)
@@ -107,20 +103,13 @@ public class ClaimsRoute implements Route {
 				catch (KPABEException e) {
 					throw new RuntimeException(e); // XXX hmmm.
 				}
-
-
-				
-//				// record sharekey
-//				keyStore.recordKey();
+	
+//				  # create share keys for ourself to ensure we can continue to get our own claims
+//				  # they can be explicit for each statement.
+//				  for pattern in claim.get_patterns(combinations = True, add_time = False, add_mpk = False):
+//				    keys.record_key(pattern, abeclient.DEFAULT_ABE.share(pattern))
 			})
 		;
-		
-		
-		
-//		  # create share keys for ourself to ensure we can continue to get our own claims
-//		  # they can be explicit for each statement.
-//		  for pattern in claim.get_patterns(combinations = True, add_time = False, add_mpk = False):
-//		    keys.record_key(pattern, abeclient.DEFAULT_ABE.share(pattern))
 		
 		
 		var o = new JsonObject();

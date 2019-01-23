@@ -1,7 +1,5 @@
 package com.goodforgoodbusiness.dhtjava.service.route;
 
-import static com.goodforgoodbusiness.dhtjava.crypto.KeyEncoder.decodeSecretKey;
-
 import java.security.InvalidKeyException;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -10,12 +8,11 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.dhtjava.DHTApp;
 import com.goodforgoodbusiness.dhtjava.Pattern;
-import com.goodforgoodbusiness.dhtjava.crypto.Crypto;
-import com.goodforgoodbusiness.dhtjava.crypto.CryptoException;
+import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
+import com.goodforgoodbusiness.dhtjava.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.dhtjava.dht.share.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Pointer;
@@ -30,15 +27,13 @@ import spark.Route;
 public class MatchesRoute implements Route {
 	private static final Logger log = Logger.getLogger(MatchesRoute.class);
 	
-	private final Crypto crypto;
-	private final ShareKeyStore keyStore;
 	private final DHTStore dht;
+	private final PointerCrypter pointerCrypter;
 	
 	@Inject
-	public MatchesRoute(DHTStore dht, ShareKeyStore keyStore, Crypto crypto) {
+	public MatchesRoute(DHTStore dht, PointerCrypter pointerCrypter) {
 		this.dht = dht;
-		this.keyStore = keyStore;
-		this.crypto = crypto;
+		this.pointerCrypter = pointerCrypter;
 	}
 	
 	@Override
@@ -70,11 +65,7 @@ public class MatchesRoute implements Route {
 		log.info("Decrypting pointer: " + data.substring(0, 10) + "...");
 		
 		try {
-			// XXX create temporary key
-			// this key should be able to decrypt the pointer
-			var shareKey = DHTApp.kpabe.shareKey(pattern); 
-			
-			var result = crypto.decryptPointer(data, shareKey);
+			var result = pointerCrypter.decrypt(data);
 			if (result != null) {
 				return result;
 			}
@@ -98,9 +89,9 @@ public class MatchesRoute implements Route {
 		if (claim != null) {
 			try {
 				log.info("Decrypting claim: " + claim.getId());
-				return crypto.decryptClaim(claim, decodeSecretKey(pointer.getClaimKey()));
+				return new ClaimCrypter(pointer.getClaimKey()).decrypt(claim);
 			}
-			catch (CryptoException e) {
+			catch (EncryptionException e) {
 				log.error("Error decrypting claim", e); 
 			}
 		}

@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.dhtjava.dht.share;
+package com.goodforgoodbusiness.dhtjava.crypto.store;
 
 import static com.goodforgoodbusiness.shared.TripleUtil.valueOf;
 
