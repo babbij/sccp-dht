@@ -10,7 +10,7 @@ import com.goodforgoodbusiness.dhtjava.crypto.Identity;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.AsymmetricEncryption;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.model.Contents;
-import com.goodforgoodbusiness.model.Contents.ContentType;
+import com.goodforgoodbusiness.model.Contents.ThreadType;
 import com.goodforgoodbusiness.model.Envelope;
 import com.goodforgoodbusiness.model.Link;
 import com.goodforgoodbusiness.model.LinkSecret;
@@ -40,7 +40,7 @@ public class ClaimBuilder {
 			final var linkSigningPair = AsymmetricEncryption.createKeyPair();
 			
 			final var contents = new Contents(
-				ContentType.CLAIM,
+				ThreadType.CLAIM,
 				claim.getLinks()
 					.stream()
 					.map(link -> antecedent(link, linkSigningPair.getPrivate()))
