@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.dhtjava.crypto.store;
+package com.goodforgoodbusiness.dhtjava.crypto.store.spec;
 
 import static com.goodforgoodbusiness.shared.TripleUtil.valueOf;
 
@@ -7,24 +7,34 @@ import org.apache.jena.graph.Triple;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ShareKeyIndex {
+/**
+ * The specification for a ShareKey, the sub/pre/obj that is required.
+ */
+public class ShareKeySpec {
 	@Expose
-	@SerializedName("subject")
-	
-	private final String subject;
-	
-	@Expose
-	@SerializedName("predicate")
-	private final String predicate;
+	@SerializedName("sub")
+	private String subject;
 	
 	@Expose
-	@SerializedName("object")
-	private final String object;
+	@SerializedName("pre")
+	private String predicate;
 	
-	public ShareKeyIndex(Triple triple) {
-		this.subject = valueOf(triple.getSubject());
-		this.predicate = valueOf(triple.getPredicate());
-		this.object = valueOf(triple.getObject());
+	@Expose
+	@SerializedName("obj")
+	private String object;
+	
+	public ShareKeySpec(String sub, String pre, String obj) {
+		this.subject = sub;
+		this.predicate = pre;
+		this.object = obj;
+	}
+
+	public ShareKeySpec(Triple triple) {
+		this(
+			valueOf(triple.getSubject()),
+			valueOf(triple.getPredicate()),
+			valueOf(triple.getObject())
+		);
 	}
 	
 	public String getSubject() {
@@ -54,11 +64,11 @@ public class ShareKeyIndex {
 			return true;
 		}
 		
-		if (!(o instanceof ShareKeyIndex)) {
+		if (!(o instanceof ShareKeySpec)) {
 			return false;
 		}
 		
-		ShareKeyIndex other = (ShareKeyIndex)o;
+		ShareKeySpec other = (ShareKeySpec)o;
 		
 		return
 			((subject != null) ? subject.equals(other.subject) : (other.subject == null)) && 
@@ -66,5 +76,10 @@ public class ShareKeyIndex {
 			((object != null) ? object.equals(other.object) : (other.object == null))
 		;
 		
+	}
+	
+	@Override
+	public String toString() {
+		return "ShareKeySpec(" + subject + ", " + predicate + ", " + object + ")";
 	}
 }

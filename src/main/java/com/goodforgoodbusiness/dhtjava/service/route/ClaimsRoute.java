@@ -16,6 +16,7 @@ import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
+import com.goodforgoodbusiness.shared.ContentType;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.SubmittableClaim;
@@ -41,18 +42,20 @@ public class ClaimsRoute implements Route {
 	}
 	
 	private final ClaimBuilder builder;
-	private final PointerCrypter pointerCrypto;
+	private final PointerCrypter pointerCrypter;
 	private final DHTStore dht;
 	
 	@Inject
 	public ClaimsRoute(ClaimBuilder builder, DHTStore dht, PointerCrypter pointerCrypto) {
 		this.builder = builder;
 		this.dht = dht;
-		this.pointerCrypto = pointerCrypto;
+		this.pointerCrypter = pointerCrypto;
 	}
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
+		res.type(ContentType.json.getContentTypeString());
+		
 		log.info("Processing claim post");
 		
 		var claim = builder.buildFrom(
@@ -90,7 +93,7 @@ public class ClaimsRoute implements Route {
 				try {
 					dht.putPointer(
 						pattern,
-						pointerCrypto.encrypt(
+						pointerCrypter.encrypt(
 							new Pointer(
 								encryptedClaim.getId(),
 								crypter.getSecretKey().toEncodedString(),
@@ -110,7 +113,6 @@ public class ClaimsRoute implements Route {
 //				    keys.record_key(pattern, abeclient.DEFAULT_ABE.share(pattern))
 			})
 		;
-		
 		
 		var o = new JsonObject();
 		o.addProperty("id", encryptedClaim.getId());

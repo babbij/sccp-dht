@@ -7,6 +7,8 @@ import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.dhtjava.service.route.ClaimsRoute;
 import com.goodforgoodbusiness.dhtjava.service.route.MatchesRoute;
+import com.goodforgoodbusiness.dhtjava.service.route.ShareAcceptRoute;
+import com.goodforgoodbusiness.dhtjava.service.route.ShareRequestRoute;
 import com.goodforgoodbusiness.shared.web.cors.CorsFilter;
 import com.goodforgoodbusiness.shared.web.cors.CorsRoute;
 import com.goodforgoodbusiness.shared.web.error.BadRequestException;
@@ -43,6 +45,8 @@ public class DHTService {
 		
 		service.get("/matches", new MatchesRoute(dht, pointerCrypter));
 		service.post("/claims", new ClaimsRoute(claimBuilder, dht, pointerCrypter));
+		service.get("/share", new ShareRequestRoute(pointerCrypter));
+		service.post("/share", new ShareAcceptRoute(pointerCrypter));
 		
 		service.exception(BadRequestException.class, new BadRequestExceptionHandler());
 		service.exception(IOException.class, new IOExceptionHandler());

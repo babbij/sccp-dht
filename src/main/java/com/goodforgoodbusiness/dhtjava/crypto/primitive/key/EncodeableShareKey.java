@@ -96,4 +96,9 @@ public final class EncodeableShareKey {
 		
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "EncodeableShareKey(" + publicKey.toString() + ", " + shareKey.toString() + ")";
+	}
 }

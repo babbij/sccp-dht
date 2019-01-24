@@ -14,6 +14,7 @@ import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
+import com.goodforgoodbusiness.shared.ContentType;
 import com.goodforgoodbusiness.shared.JSON;
 import com.goodforgoodbusiness.shared.model.Pointer;
 import com.goodforgoodbusiness.shared.model.StoredClaim;
@@ -38,6 +39,8 @@ public class MatchesRoute implements Route {
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
+		res.type(ContentType.json.getContentTypeString());
+		
 		var triple = JSON.decode(req.queryParams("pattern"), Triple.class);
 		log.info("Matches called for " + triple);
 		
@@ -51,7 +54,7 @@ public class MatchesRoute implements Route {
 			// pointer -> encrypted claim -> stored claim
 			// check for nulls at each stage (not errors)
 			dht.getPointers(pattern)
-				.map(data -> decryptPointer(pattern, data))
+				.map(data -> decryptPointer(triple, data))
 				.filter(Objects::nonNull)
 				.map(pointer -> fetchClaim(pointer))
 				.filter(Objects::nonNull)
@@ -61,11 +64,11 @@ public class MatchesRoute implements Route {
 		return JSON.encode(claims);
 	}
 	
-	private Pointer decryptPointer(String pattern, String data) {			
+	private Pointer decryptPointer(Triple triple, String data) {			
 		log.info("Decrypting pointer: " + data.substring(0, 10) + "...");
 		
 		try {
-			var result = pointerCrypter.decrypt(data);
+			var result = pointerCrypter.decrypt(triple, data);
 			if (result != null) {
 				return result;
 			}

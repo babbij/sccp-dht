@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyIndex;
 import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -22,7 +22,7 @@ public class MemoryKeyStore implements ShareKeyStore {
 	private final Map<String, List<EncodeableShareKey>> byObject = new HashMap<>();
 	
 	@Override
-	public void saveKey(ShareKeyIndex idx, EncodeableShareKey key) {
+	public void saveKey(ShareKeySpec idx, EncodeableShareKey key) {
 		if (idx.getSubject() != null) {
 			var bySubjectIdx = bySubject.get(idx.getSubject());
 			if (bySubjectIdx == null) {
@@ -55,15 +55,15 @@ public class MemoryKeyStore implements ShareKeyStore {
 	}
 
 	@Override
-	public Stream<EncodeableShareKey> findKeys(ShareKeyIndex idx) {
+	public Stream<EncodeableShareKey> findKeys(ShareKeySpec spec) {
 		var seen = new HashSet<EncodeableShareKey>(); // suppress duplicates
 		
 		return 
 			concat(
-				bySubject.getOrDefault(idx.getSubject(), emptyList()).stream(),
+				bySubject.getOrDefault(spec.getSubject(), emptyList()).stream(),
 				concat(
-					byPredicate.getOrDefault(idx.getPredicate(), emptyList()).stream(),
-					byObject.getOrDefault(idx.getObject(), emptyList()).stream()
+					byPredicate.getOrDefault(spec.getPredicate(), emptyList()).stream(),
+					byObject.getOrDefault(spec.getObject(), emptyList()).stream()
 				)
 			)
 			.filter(seen::add)

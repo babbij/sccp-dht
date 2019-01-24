@@ -45,4 +45,9 @@ public abstract class AbstractEncodeableKey implements Key, EncodeableKey {
 		
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return this.toEncodedString();
+	}
 }

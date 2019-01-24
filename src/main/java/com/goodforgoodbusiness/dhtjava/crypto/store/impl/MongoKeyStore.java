@@ -13,8 +13,8 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyIndex;
 import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.goodforgoodbusiness.shared.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -41,39 +41,39 @@ public class MongoKeyStore implements ShareKeyStore {
 		
 		var keyCollection = database.getCollection(CL_KEYS);
 		
-		keyCollection.createIndex(ascending("subject"));
-		keyCollection.createIndex(ascending("predicate"));
-		keyCollection.createIndex(ascending("object"));
+		keyCollection.createIndex(ascending("sub"));
+		keyCollection.createIndex(ascending("pre"));
+		keyCollection.createIndex(ascending("obj"));
 		
 		keyCollection.createIndex(ascending("key"), new IndexOptions().unique(true));
 	}
 	
 	@Override
-	public void saveKey(ShareKeyIndex idx, EncodeableShareKey key) {
+	public void saveKey(ShareKeySpec spec, EncodeableShareKey key) {
 		database
 			.getCollection(CL_KEYS)
 			.insertOne(
 				Document
-					.parse(JSON.encodeToString(idx))
+					.parse(JSON.encodeToString(spec))
 					.append("key", Document.parse(JSON.encodeToString(key)))
 			)
 		;
 	}
 
 	@Override
-	public Stream<EncodeableShareKey> findKeys(ShareKeyIndex idx) {
+	public Stream<EncodeableShareKey> findKeys(ShareKeySpec idx) {
 		var filters = new LinkedList<Bson>();
 		
 		if (idx.getSubject() != null) {
-			filters.add(eq("subject", idx.getSubject()));
+			filters.add(eq("sub", idx.getSubject()));
 		}
 		
 		if (idx.getPredicate() != null) {
-			filters.add(eq("predicate", idx.getPredicate()));
+			filters.add(eq("pre", idx.getPredicate()));
 		}
 		
 		if (idx.getObject() != null) {
-			filters.add(eq("object", idx.getObject()));
+			filters.add(eq("obj", idx.getObject()));
 		}
 		
 		return 

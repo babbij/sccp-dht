@@ -8,11 +8,12 @@ import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
 
+import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.goodforgoodbusiness.shared.CBOR;
 import com.goodforgoodbusiness.shared.Hex;
 
 public class Pattern {
-	private static final String HASH_PREFIX = "a";
+	private static final String PREFIX = "a";
 	
 	/**
 	 * Return the pattern to search the network for a particular Triple
@@ -22,7 +23,21 @@ public class Pattern {
 			// prefixing 'a' here makes all signatures compatible
 			// with OpenABE which doesn't like attributes beginning with digits
 			//it also gives us an opportunity to version the hash!		
-			return HASH_PREFIX + Hex.encode(sha256(CBOR.forObject(toValueArray(pattern))));
+			return PREFIX + Hex.encode(sha256(CBOR.forObject(toValueArray(pattern))));
+		}
+		catch (Exception e) {
+			throw new PatternException("Pointer creation error", e);
+		}
+	}
+	
+	/**
+	 * Return the pattern for a particular share key specification
+	 */
+	public static String forSpec(ShareKeySpec spec) {
+		try {
+			return PREFIX + Hex.encode(sha256(CBOR.forObject(
+				new String [] { spec.getSubject(), spec.getPredicate(), spec.getObject() }
+			)));
 		}
 		catch (Exception e) {
 			throw new PatternException("Pointer creation error", e);

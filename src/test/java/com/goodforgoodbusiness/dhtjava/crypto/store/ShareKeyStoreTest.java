@@ -7,6 +7,7 @@ import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MongoKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
 
 public class ShareKeyStoreTest {
@@ -21,9 +22,9 @@ public class ShareKeyStoreTest {
 
 		var ks = new MongoKeyStore("mongodb://localhost:27017/keys");
 		
-		ks.saveKey(new ShareKeyIndex(new Triple(s, p, o)), shareKey);
+		ks.saveKey(new ShareKeySpec(new Triple(s, p, o)), shareKey);
 		
-		ks.findKeys(new ShareKeyIndex(new Triple(s, p, o))).forEach(
+		ks.findKeys(new ShareKeySpec(new Triple(s, p, o))).forEach(
 			foundKey -> {
 				System.out.println(foundKey.toKeyPair().getPublic());
 				System.out.println(foundKey.toKeyPair().getPrivate());

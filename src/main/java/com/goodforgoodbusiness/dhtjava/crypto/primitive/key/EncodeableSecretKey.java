@@ -27,7 +27,7 @@ public class EncodeableSecretKey extends AbstractEncodeableKey implements Encode
 	public EncodeableSecretKey(String encodedForm) {
 		super(unencode(encodedForm));
 	}
-
+	
 	@Override
 	public String toEncodedString() {
 		try {

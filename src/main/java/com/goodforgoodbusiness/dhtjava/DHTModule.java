@@ -7,7 +7,7 @@ import java.util.Properties;
 import com.goodforgoodbusiness.dhtjava.crypto.Identity;
 import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
-import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MongoKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MemoryKeyStore;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.dhtjava.dht.impl.MongoDHTStore;
 import com.goodforgoodbusiness.dhtjava.service.DHTService;
@@ -30,10 +30,11 @@ public class DHTModule extends AbstractModule {
 				)
 			);
 			
-			bind(PointerCrypter.class);
 			bind(Identity.class);
+			bind(PointerCrypter.class);
+			bind(ShareKeyStore.class).to(MemoryKeyStore.class);
 			bind(DHTStore.class).to(MongoDHTStore.class);
-			bind(ShareKeyStore.class).to(MongoKeyStore.class);
+//			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
 			bind(DHTService.class);
 		}
