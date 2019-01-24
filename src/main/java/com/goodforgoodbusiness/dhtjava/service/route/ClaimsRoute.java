@@ -2,6 +2,7 @@ package com.goodforgoodbusiness.dhtjava.service.route;
 
 import static com.google.common.collect.Streams.concat;
 import static java.lang.System.currentTimeMillis;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 
@@ -79,10 +80,13 @@ public class ClaimsRoute implements Route {
 		// the attributes to use for encryption are patterns + timestamp
 		// so that keys can be issued with a pattern + a timestamp range to
 		// restrict access to a particular temporal window.
-		var attributes = concat(
-			patterns.stream(),
-			of(Long.toString(currentTimeMillis() / 1000L))
-		);
+		var attributes =
+			concat(
+				patterns.stream(),
+				of("time = " + Long.toString(currentTimeMillis() / 1000L))
+			)
+			.collect(toList())
+		;
 		
 		// create a pointer for each pattern
 		// the pointer needs to be encrypted with _all_ the possible patterns

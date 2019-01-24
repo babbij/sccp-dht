@@ -1,12 +1,12 @@
 package com.goodforgoodbusiness.dhtjava.crypto;
 
-import static java.util.stream.Collectors.joining;
-
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.dhtjava.Pattern;
@@ -33,10 +33,10 @@ public class PointerCrypter {
 		this.store = store;
 	}
 	
-	public String encrypt(Pointer pointer, Stream<String> attributes) throws KPABEException {
+	public String encrypt(Pointer pointer, List<String> attributes) throws KPABEException {
 		var data = kpabe.encrypt(
 			JSON.encodeToString(pointer),
-			attributes.collect( joining( "|" ) )
+			StringUtils.join(attributes, "|" )
 		);
 		
 		return data;
@@ -44,8 +44,9 @@ public class PointerCrypter {
 	
 	public Pointer decrypt(Triple triple, String data) throws KPABEException, InvalidKeyException {
 		return
-			store.findKeys(new ShareKeySpec(triple))
-				.map(EncodeableShareKey::toKeyPair)
+//			store.findKeys(new ShareKeySpec(triple))
+//				.map(EncodeableShareKey::toKeyPair)
+			Stream.of(kpabe.shareKey(Pattern.forSearch(triple)))
 				.map(keyPair -> {
 					try {
 						return KPABEInstance.decrypt(data, keyPair);

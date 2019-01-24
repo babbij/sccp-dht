@@ -3,6 +3,8 @@ package com.goodforgoodbusiness.dhtjava.crypto;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.sparql.util.NodeFactoryExtra.createLiteralNode;
 
+import java.util.stream.Collectors;
+
 import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.dhtjava.Pattern;
@@ -28,7 +30,7 @@ public class PointerCrypterTest {
 				
 		var key = new ClaimCrypter().getSecretKey();
 		var pointer = new Pointer("abc123", key.toEncodedString(), 1234l);
-		var data = crypter.encrypt(pointer, Pattern.forPublish(triple));
+		var data = crypter.encrypt(pointer, Pattern.forPublish(triple).collect(Collectors.toList()));
 		
 		System.out.println(data);
 		
