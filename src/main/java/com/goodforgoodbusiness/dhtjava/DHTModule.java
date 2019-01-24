@@ -52,7 +52,7 @@ public class DHTModule extends AbstractModule {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		createInjector(new DHTModule(loadConfig(DHTModule.class, "config.properties")))
+		createInjector(new DHTModule(loadConfig(DHTModule.class, "dht.properties")))
 			.getInstance(DHTService.class)
 			.start()
 		;
