@@ -7,10 +7,10 @@ import org.apache.jena.sparql.util.NodeFactoryExtra;
 import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.Identity;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.AsymmetricEncryption;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Link;
-import com.goodforgoodbusiness.shared.model.Link.RelType;
-import com.goodforgoodbusiness.shared.model.SubmittableClaim;
+import com.goodforgoodbusiness.model.Link;
+import com.goodforgoodbusiness.model.Link.RelType;
+import com.goodforgoodbusiness.model.SubmittableClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class ClaimBuilderTest {
 	public static void main(String[] args) throws Exception {

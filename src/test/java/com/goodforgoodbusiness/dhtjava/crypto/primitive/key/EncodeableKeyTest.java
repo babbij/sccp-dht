@@ -1,7 +1,7 @@
 package com.goodforgoodbusiness.dhtjava.crypto.primitive.key;
 
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.SymmetricEncryption;
-import com.goodforgoodbusiness.shared.JSON;
+import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class EncodeableKeyTest {
 	public static void main(String[] args) {

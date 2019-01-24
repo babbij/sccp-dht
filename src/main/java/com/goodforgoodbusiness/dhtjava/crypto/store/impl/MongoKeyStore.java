@@ -15,7 +15,7 @@ import org.bson.conversions.Bson;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
 import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
-import com.goodforgoodbusiness.shared.JSON;
+import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;

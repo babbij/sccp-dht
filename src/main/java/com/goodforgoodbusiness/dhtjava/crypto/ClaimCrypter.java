@@ -3,12 +3,12 @@ package com.goodforgoodbusiness.dhtjava.crypto;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.SymmetricEncryption;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableSecretKey;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Contents;
-import com.goodforgoodbusiness.shared.model.EncryptedClaim;
-import com.goodforgoodbusiness.shared.model.EncryptedEnvelope;
-import com.goodforgoodbusiness.shared.model.Envelope;
-import com.goodforgoodbusiness.shared.model.StoredClaim;
+import com.goodforgoodbusiness.model.Contents;
+import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedEnvelope;
+import com.goodforgoodbusiness.model.Envelope;
+import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class ClaimCrypter {
 	private final EncodeableSecretKey secretKey;

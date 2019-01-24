@@ -16,8 +16,8 @@ import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareRangeSpec;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Pointer;
+import com.goodforgoodbusiness.model.Pointer;
+import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 
 /**

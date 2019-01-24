@@ -14,10 +14,10 @@ import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
-import com.goodforgoodbusiness.shared.ContentType;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Pointer;
-import com.goodforgoodbusiness.shared.model.StoredClaim;
+import com.goodforgoodbusiness.model.Pointer;
+import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
+import com.goodforgoodbusiness.shared.web.ContentType;
 import com.goodforgoodbusiness.shared.web.error.BadRequestException;
 import com.google.inject.Inject;
 

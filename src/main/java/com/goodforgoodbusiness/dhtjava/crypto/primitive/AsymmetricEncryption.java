@@ -13,7 +13,7 @@ import java.security.SignatureException;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableKeyPair;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeablePrivateKey;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeablePublicKey;
-import com.goodforgoodbusiness.shared.Hex;
+import com.goodforgoodbusiness.shared.encode.Hex;
 
 public class AsymmetricEncryption {
 	public static final String KEY_ALGORITHM = "EC";

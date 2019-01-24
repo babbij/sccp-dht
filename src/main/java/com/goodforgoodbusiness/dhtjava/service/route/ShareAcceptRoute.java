@@ -5,7 +5,7 @@ import org.apache.log4j.Logger;
 import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
-import com.goodforgoodbusiness.shared.JSON;
+import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;

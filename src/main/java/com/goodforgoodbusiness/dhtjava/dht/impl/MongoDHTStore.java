@@ -10,8 +10,8 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;

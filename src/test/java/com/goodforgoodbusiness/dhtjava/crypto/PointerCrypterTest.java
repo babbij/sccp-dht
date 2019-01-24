@@ -10,7 +10,7 @@ import com.goodforgoodbusiness.dhtjava.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MemoryKeyStore;
 import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
-import com.goodforgoodbusiness.shared.model.Pointer;
+import com.goodforgoodbusiness.model.Pointer;
 
 public class PointerCrypterTest {
 	public static void main(String[] args) throws Exception {

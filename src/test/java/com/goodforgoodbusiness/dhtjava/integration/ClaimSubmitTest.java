@@ -11,11 +11,11 @@ import java.net.http.HttpResponse.BodyHandlers;
 
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.shared.ContentType;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Link;
-import com.goodforgoodbusiness.shared.model.Link.RelType;
-import com.goodforgoodbusiness.shared.model.SubmittableClaim;
+import com.goodforgoodbusiness.model.Link;
+import com.goodforgoodbusiness.model.Link.RelType;
+import com.goodforgoodbusiness.model.SubmittableClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
+import com.goodforgoodbusiness.shared.web.ContentType;
 
 public class ClaimSubmitTest {
 	public static void main(String[] args) throws Exception {

@@ -9,8 +9,8 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.URIModifier;
+import com.goodforgoodbusiness.shared.encode.JSON;
+import com.goodforgoodbusiness.shared.web.URIModifier;
 
 public class MatchSearchTest {
 	public static void main(String[] args) throws Exception {

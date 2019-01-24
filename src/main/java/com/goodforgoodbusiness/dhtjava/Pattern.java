@@ -1,6 +1,6 @@
 package com.goodforgoodbusiness.dhtjava;
 
-import static com.goodforgoodbusiness.shared.Hash.sha256;
+import static com.goodforgoodbusiness.shared.encode.Hash.sha256;
 import static com.goodforgoodbusiness.shared.TripleUtil.toValueArray;
 import static org.apache.jena.graph.Node.ANY;
 
@@ -9,8 +9,8 @@ import java.util.stream.Stream;
 import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.dhtjava.crypto.store.spec.ShareKeySpec;
-import com.goodforgoodbusiness.shared.CBOR;
-import com.goodforgoodbusiness.shared.Hex;
+import com.goodforgoodbusiness.shared.encode.CBOR;
+import com.goodforgoodbusiness.shared.encode.Hex;
 
 public class Pattern {
 	private static final String PREFIX = "a";

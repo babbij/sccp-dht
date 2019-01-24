@@ -2,7 +2,7 @@ package com.goodforgoodbusiness.dhtjava.dht;
 
 import java.util.stream.Stream;
 
-import com.goodforgoodbusiness.shared.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedClaim;
 
 public interface DHTStore {
 	public Stream<String> getPointers(String pointer) ;

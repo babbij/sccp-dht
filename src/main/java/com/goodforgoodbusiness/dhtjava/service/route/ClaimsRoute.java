@@ -16,10 +16,10 @@ import com.goodforgoodbusiness.dhtjava.crypto.ClaimCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
-import com.goodforgoodbusiness.shared.ContentType;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.Pointer;
-import com.goodforgoodbusiness.shared.model.SubmittableClaim;
+import com.goodforgoodbusiness.model.Pointer;
+import com.goodforgoodbusiness.model.SubmittableClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
+import com.goodforgoodbusiness.shared.web.ContentType;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 

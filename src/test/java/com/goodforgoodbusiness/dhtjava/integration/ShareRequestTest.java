@@ -5,7 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 
-import com.goodforgoodbusiness.shared.ContentType;
+import com.goodforgoodbusiness.shared.web.ContentType;
 
 public class ShareRequestTest {
 	public static void main(String[] args) throws Exception {

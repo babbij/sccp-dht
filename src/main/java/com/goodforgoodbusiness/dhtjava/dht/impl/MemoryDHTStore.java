@@ -9,8 +9,8 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
-import com.goodforgoodbusiness.shared.JSON;
-import com.goodforgoodbusiness.shared.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Singleton;
 
 @Singleton
