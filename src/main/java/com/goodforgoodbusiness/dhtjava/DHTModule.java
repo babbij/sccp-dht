@@ -1,13 +1,17 @@
 package com.goodforgoodbusiness.dhtjava;
 
+import static com.goodforgoodbusiness.shared.ConfigLoader.loadConfig;
 import static com.google.inject.Guice.createInjector;
+import static org.apache.commons.configuration2.ConfigurationConverter.getProperties;
 
 import java.util.Properties;
+
+import org.apache.commons.configuration2.Configuration;
 
 import com.goodforgoodbusiness.dhtjava.crypto.Identity;
 import com.goodforgoodbusiness.dhtjava.crypto.PointerCrypter;
 import com.goodforgoodbusiness.dhtjava.crypto.store.ShareKeyStore;
-import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MemoryKeyStore;
+import com.goodforgoodbusiness.dhtjava.crypto.store.impl.MongoKeyStore;
 import com.goodforgoodbusiness.dhtjava.dht.DHTStore;
 import com.goodforgoodbusiness.dhtjava.dht.impl.MongoDHTStore;
 import com.goodforgoodbusiness.dhtjava.service.DHTService;
@@ -16,11 +20,16 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 
 public class DHTModule extends AbstractModule {
+	private final Configuration config;
+	
+	protected DHTModule(Configuration config) {
+		this.config = config;
+	}
+	
 	@Override
 	protected void configure() {
-		var props = new Properties();
-		try (var is = getClass().getClassLoader().getResourceAsStream("main.properties")) {
-			props.load(is);
+		try {
+			Properties props = getProperties(config);
 			Names.bindProperties(binder(), props);
 			
 			bind(KPABEInstance.class).toInstance(
@@ -32,9 +41,8 @@ public class DHTModule extends AbstractModule {
 			
 			bind(Identity.class);
 			bind(PointerCrypter.class);
-			bind(ShareKeyStore.class).to(MemoryKeyStore.class);
 			bind(DHTStore.class).to(MongoDHTStore.class);
-//			bind(ShareKeyStore.class).to(MongoKeyStore.class);
+			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
 			bind(DHTService.class);
 		}
@@ -44,7 +52,7 @@ public class DHTModule extends AbstractModule {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		createInjector(new DHTModule())
+		createInjector(new DHTModule(loadConfig(DHTModule.class, "config.properties")))
 			.getInstance(DHTService.class)
 			.start()
 		;
