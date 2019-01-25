@@ -17,7 +17,7 @@ public class DHTAccessGovernorTest {
 		var trip1 = new Triple(sub, pre, obj);
 		var trip2 = new Triple(sub, pre, ANY);
 		
-		var gov1 = new DHTAccessGovernor();
+		var gov1 = new DHTAccessGovernor(30);
 		
 		System.out.println(gov1.allow(trip1));
 		System.out.println(gov1.allow(trip1));
@@ -28,14 +28,14 @@ public class DHTAccessGovernorTest {
 		
 		// also try a narrowing search
 		
-		var gov2 = new DHTAccessGovernor();
+		var gov2 = new DHTAccessGovernor(30);
 		
 		System.out.println(gov2.allow(trip2));
 		System.out.println(gov2.allow(trip1));
 		
 		// but the inverse shouldn't be true
 		
-		var gov3 = new DHTAccessGovernor();
+		var gov3 = new DHTAccessGovernor(30);
 		
 		System.out.println(gov3.allow(trip1));
 		System.out.println(gov3.allow(trip2));
