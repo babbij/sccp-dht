@@ -1,5 +1,7 @@
 package com.goodforgoodbusiness.engine.dht;
 
+import static java.util.stream.Stream.empty;
+
 import java.security.InvalidKeyException;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -22,35 +24,44 @@ import com.google.inject.Singleton;
 public class DHTSearcher {
 	private static final Logger log = Logger.getLogger(DHTSearcher.class);
 	
+	private final ClaimStore store;
 	private final DHT dht;
-	private final PointerCrypter pointerCrypter;
-	private final ClaimStore claimStore;
+	private final DHTAccessGovernor governor;
+	private final PointerCrypter crypter;
 	
 	@Inject
-	public DHTSearcher(ClaimStore claimStore, DHT dht, PointerCrypter pointerCrypter) {
-		this.claimStore = claimStore;
+	public DHTSearcher(ClaimStore store, DHT dht, DHTAccessGovernor governor, PointerCrypter crypter) {
+		this.store = store;
 		this.dht = dht;
-		this.pointerCrypter = pointerCrypter;
+		this.governor = governor;
+		this.crypter = crypter;
 	}
 	
 	public Stream<StoredClaim> search(Triple triple) {
-		var pattern = Pattern.forSearch(triple);
-		
-		// pointer -> encrypted claim -> stored claim
-		// check for nulls at each stage (not errors)
-		return dht.getPointers(pattern)
-			.map(data -> decryptPointer(triple, data))
-			.filter(Objects::nonNull)
-			.map(pointer -> fetchClaim(pointer))
-			.filter(Objects::nonNull)
-		;
+		if (governor.allow(triple)) {
+			log.info("DHT searching for " + triple);
+			var pattern = Pattern.forSearch(triple);
+			
+			// pointer -> encrypted claim -> stored claim
+			// check for nulls at each stage (not errors)
+			return dht.getPointers(pattern)
+				.map(data -> decryptPointer(triple, data))
+				.filter(Objects::nonNull)
+				.map(pointer -> fetchClaim(pointer))
+				.filter(Objects::nonNull)
+			;
+		}
+		else {
+			log.info("DHT cache hit for " + triple);
+			return empty();
+		}
 	}
 	
 	private Pointer decryptPointer(Triple triple, String data) {			
 		log.info("Decrypting pointer: " + data.substring(0, 10) + "...");
 		
 		try {
-			var result = pointerCrypter.decrypt(triple, data);
+			var result = crypter.decrypt(triple, data);
 			if (result != null) {
 				return result;
 			}
@@ -75,7 +86,7 @@ public class DHTSearcher {
 			try {
 				log.info("Decrypting claim: " + encryptedClaim.getId());
 				var claim = new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim);
-				claimStore.save(claim);
+				store.save(claim);
 				return claim;
 			}
 			catch (EncryptionException e) {

@@ -41,11 +41,11 @@ public class ShareRequestRoute implements Route {
 		}
 	}
 	
-	private final PointerCrypter pointerCrypter;
+	private final PointerCrypter crypter;
 	
 	@Inject
 	public ShareRequestRoute(PointerCrypter pointerCrypter) {
-		this.pointerCrypter = pointerCrypter;
+		this.crypter = pointerCrypter;
 	}
 	
 	@Override
@@ -64,7 +64,7 @@ public class ShareRequestRoute implements Route {
 			req.queryParams("start"), req.queryParams("end")
 		);
 		
-		var shareKey = pointerCrypter.makeShareKey(keySpec, rangeSpec);
+		var shareKey = crypter.makeShareKey(keySpec, rangeSpec);
 		
 		return JSON.encode(
 			new ShareResponse(keySpec, rangeSpec, shareKey)

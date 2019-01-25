@@ -15,6 +15,7 @@ import org.apache.commons.configuration2.Configuration;
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
 import com.goodforgoodbusiness.engine.dht.DHT;
+import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
 import com.goodforgoodbusiness.engine.dht.impl.MongoDHT;
@@ -23,7 +24,7 @@ import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
-import com.goodforgoodbusiness.engine.store.claim.impl.MemClaimStore;
+import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
@@ -53,13 +54,17 @@ public class EngineModule extends AbstractModule {
 			Names.bindProperties(binder(), props);
 			
 			bind(Identity.class);
+			
+			bind(DHTAccessGovernor.class);
 			bind(DHTPublisher.class);
 			bind(DHTSearcher.class);
 			bind(ClaimBuilder.class);
-			bind(ClaimStore.class).to(MemClaimStore.class);
 			bind(PointerCrypter.class);
+			
 			bind(DHT.class).to(MongoDHT.class);
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
+			bind(ClaimStore.class).to(MongoClaimStore.class);
+			
 			bind(Webapp.class);
 			
 			var routes = newMapBinder(binder(), Resource.class, Route.class);

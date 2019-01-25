@@ -3,13 +3,9 @@ package com.goodforgoodbusiness.engine.crypto;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.sparql.util.NodeFactoryExtra.createLiteralNode;
 
-import java.util.stream.Collectors;
-
 import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.engine.Pattern;
-import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.impl.MemKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
@@ -32,7 +28,7 @@ public class PointerCrypterTest {
 				
 		var key = new ClaimCrypter().getSecretKey();
 		var pointer = new Pointer("abc123", key.toEncodedString(), 1234l);
-		var data = crypter.encrypt(pointer, Pattern.forPublish(triple).collect(Collectors.toList()));
+		var data = crypter.encrypt(pointer, Pattern.forPublish(triple));
 		
 		System.out.println(data);
 		

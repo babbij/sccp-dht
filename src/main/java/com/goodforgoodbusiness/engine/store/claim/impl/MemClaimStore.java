@@ -26,7 +26,8 @@ public class MemClaimStore implements ClaimStore {
 		
 		claim
 			.getTriples()
-			.flatMap(Pattern::forPublish)
+			.map(Pattern::forPublish)
+			.flatMap(Set::stream)
 			.forEach(pattern -> { 
 				synchronized (storedClaims) {
 					if (storedClaims.containsKey(pattern)) {

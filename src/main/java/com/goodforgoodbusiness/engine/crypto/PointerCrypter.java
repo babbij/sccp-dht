@@ -2,8 +2,8 @@ package com.goodforgoodbusiness.engine.crypto;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.graph.Triple;
@@ -32,7 +32,7 @@ public class PointerCrypter {
 		this.store = store;
 	}
 	
-	public String encrypt(Pointer pointer, List<String> attributes) throws KPABEException {
+	public String encrypt(Pointer pointer, Set<String> attributes) throws KPABEException {
 		var data = kpabe.encrypt(
 			JSON.encodeToString(pointer),
 			StringUtils.join(attributes, "|" )

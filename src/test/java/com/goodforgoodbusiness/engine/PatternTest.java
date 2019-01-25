@@ -1,13 +1,10 @@
 package com.goodforgoodbusiness.engine;
 
-import java.util.stream.Collectors;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
-import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
 
 public class PatternTest {
@@ -35,7 +32,7 @@ public class PatternTest {
 					NodeFactory.createURI("http://xmlns.com/foaf/0.1/name"),
 					NodeFactoryExtra.createLiteralNode("Hello", null, "http://www.w3.org/2001/XMLSchema/string")
 				)
-			).collect(Collectors.toList())
+			)
 		);
 	}
 }

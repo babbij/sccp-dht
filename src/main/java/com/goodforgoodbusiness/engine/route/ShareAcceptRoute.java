@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.gson.annotations.Expose;
@@ -29,11 +30,13 @@ public class ShareAcceptRoute implements Route {
 		private EncodeableShareKey key;
 	}
 	
-	private final PointerCrypter pointerCrypter;
+	private final PointerCrypter crypter;
+	private final DHTAccessGovernor cache;
 	
 	@Inject
-	public ShareAcceptRoute(PointerCrypter pointerCrypto) {
-		this.pointerCrypter = pointerCrypto;
+	public ShareAcceptRoute(PointerCrypter pointerCrypto, DHTAccessGovernor cache) {
+		this.crypter = pointerCrypto;
+		this.cache = cache;
 	}
 	
 	@Override
@@ -42,7 +45,8 @@ public class ShareAcceptRoute implements Route {
 		
 		var sar = JSON.decode(req.body(), ShareAcceptRequest.class);
 		if (sar != null && sar.key != null) {
-			pointerCrypter.saveShareKey(sar.spec, sar.key);
+			crypter.saveShareKey(sar.spec, sar.key);
+			cache.invalidate(sar.spec); // as we may now be able to decrypt more triples
 		}
 		
 		return "OK";

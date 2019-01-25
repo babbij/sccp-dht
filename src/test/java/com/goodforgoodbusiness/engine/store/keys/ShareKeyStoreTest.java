@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.crypto.store;
+package com.goodforgoodbusiness.engine.store.keys;
 
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.sparql.util.NodeFactoryExtra.createLiteralNode;

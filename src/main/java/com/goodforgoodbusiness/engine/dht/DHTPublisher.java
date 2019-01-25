@@ -2,13 +2,11 @@ package com.goodforgoodbusiness.engine.dht;
 
 import static com.google.common.collect.Streams.concat;
 import static java.lang.System.currentTimeMillis;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -58,7 +56,8 @@ public class DHTPublisher {
 		// generate combinations for pointers
 		var patterns = claim
 			.getTriples()
-			.flatMap(Pattern::forPublish)
+			.map(Pattern::forPublish)
+			.flatMap(Set::stream)
 			.collect(toSet())
 		;
 		
@@ -77,7 +76,7 @@ public class DHTPublisher {
 		});
 	}
 	
-	private void publishPointer(String pattern, Pointer pointer, List<String> attributes) throws EncryptionException {
+	private void publishPointer(String pattern, Pointer pointer, Set<String> attributes) throws EncryptionException {
 		log.info("Publishing pattern: " + pattern);
 		
 		try {
@@ -98,13 +97,13 @@ public class DHTPublisher {
 	 * Attributes to use for encryption are patterns + timestamp.
 	 * This means keys can be issued with a pattern + a timestamp range to restrict access to a particular temporal window.
 	 */
-	private static List<String> buildAttributes(Set<String> patterns) {
+	private static Set<String> buildAttributes(Set<String> patterns) {
 		return
 			concat(
 				patterns.stream(),
 				of("time = " + Long.toString(currentTimeMillis() / 1000L))
 			)
-			.collect(toList())
+			.collect(toSet())
 		;
 	}
 }

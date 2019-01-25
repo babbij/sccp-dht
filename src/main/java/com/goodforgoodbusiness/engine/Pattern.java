@@ -1,9 +1,12 @@
 package com.goodforgoodbusiness.engine;
 
-import static com.goodforgoodbusiness.shared.encode.Hash.sha256;
 import static com.goodforgoodbusiness.shared.TripleUtil.toValueArray;
+import static com.goodforgoodbusiness.shared.encode.Hash.sha256;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.graph.Node.ANY;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
@@ -48,14 +51,24 @@ public class Pattern {
 	 * Return patterns to publish a triple under so it can be found by
 	 * various searches.
 	 */
-	public static Stream<String> forPublish(Triple triple) {
+	public static Set<String> forPublish(Triple triple) {
+
+		
+		// generate possible pointers
+		return combinations(triple)
+			.stream()
+			.map(Pattern::forSearch)
+			.collect(Collectors.toSet())
+		;
+	}
+	
+	public static Set<Triple> combinations(Triple triple) {
 		var sub = triple.getSubject();
 		var pre = triple.getPredicate();
 		var obj = triple.getObject();
 		
-		// generate possible pointers
-		return Stream
-			.of(
+		return 
+			Stream.of(
 				triple, 
 				new Triple(sub, pre, ANY),
 				new Triple(sub, ANY, obj),
@@ -66,7 +79,7 @@ public class Pattern {
 			// remove (ANY, ANY, ANY) and (ANY, pre, ANY)
 			// these can crop up if you specified an incomplete Triple
 			.filter(t -> !(t.getSubject().equals(ANY) && t.getObject().equals(ANY)))
-			.map(Pattern::forSearch)
+			.collect(toSet())
 		;
 	}
 }
