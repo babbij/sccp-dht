@@ -18,7 +18,7 @@ import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
-import com.goodforgoodbusiness.engine.dht.impl.MongoDHT;
+import com.goodforgoodbusiness.engine.dht.impl.RemoteDHT;
 import com.goodforgoodbusiness.engine.route.ClaimSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
@@ -61,7 +61,7 @@ public class EngineModule extends AbstractModule {
 			bind(ClaimBuilder.class);
 			bind(PointerCrypter.class);
 			
-			bind(DHT.class).to(MongoDHT.class);
+			bind(DHT.class).to(RemoteDHT.class);
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			bind(ClaimStore.class).to(MongoClaimStore.class);
 			
@@ -87,7 +87,9 @@ public class EngineModule extends AbstractModule {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		createInjector(new EngineModule(loadConfig(EngineModule.class, "engine.properties")))
+		var configFile = args.length > 0 ? args[0] : "engine.properties";
+		
+		createInjector(new EngineModule(loadConfig(EngineModule.class, configFile)))
 			.getInstance(Webapp.class)
 			.start()
 		;

@@ -18,6 +18,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.goodforgoodbusiness</groupId>
+			<artifactId>dhtmem</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+    
+		<dependency>
+			<groupId>org.goodforgoodbusiness</groupId>
 			<artifactId>shared</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
