@@ -2,8 +2,7 @@ package com.goodforgoodbusiness.engine.dht;
 
 import java.security.InvalidKeyException;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
 import org.apache.log4j.Logger;
@@ -34,7 +33,7 @@ public class DHTSearcher {
 		this.pointerCrypter = pointerCrypter;
 	}
 	
-	public Set<StoredClaim> search(Triple triple) {
+	public Stream<StoredClaim> search(Triple triple) {
 		var pattern = Pattern.forSearch(triple);
 		
 		// pointer -> encrypted claim -> stored claim
@@ -44,7 +43,6 @@ public class DHTSearcher {
 			.filter(Objects::nonNull)
 			.map(pointer -> fetchClaim(pointer))
 			.filter(Objects::nonNull)
-			.collect(Collectors.toSet())
 		;
 	}
 	

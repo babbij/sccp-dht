@@ -18,8 +18,8 @@ import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
 import com.goodforgoodbusiness.engine.dht.impl.MongoDHT;
-import com.goodforgoodbusiness.engine.route.ClaimsRoute;
-import com.goodforgoodbusiness.engine.route.MatchesRoute;
+import com.goodforgoodbusiness.engine.route.ClaimSubmitRoute;
+import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
@@ -64,8 +64,8 @@ public class EngineModule extends AbstractModule {
 			
 			var routes = newMapBinder(binder(), Resource.class, Route.class);
 			
-			routes.addBinding(get("/matches")).to(MatchesRoute.class);
-			routes.addBinding(post("/claims")).to(ClaimsRoute.class);
+			routes.addBinding(get("/matches")).to(MatchSearchRoute.class);
+			routes.addBinding(post("/claims")).to(ClaimSubmitRoute.class);
 			routes.addBinding(get("/share")).to(ShareRequestRoute.class);
 			routes.addBinding(post("/share")).to(ShareAcceptRoute.class);
 		}

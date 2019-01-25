@@ -10,20 +10,22 @@ import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class ClaimsRoute implements Route {	
-	private static final Logger log = Logger.getLogger(ClaimsRoute.class);
+@Singleton
+public class ClaimSubmitRoute implements Route {	
+	private static final Logger log = Logger.getLogger(ClaimSubmitRoute.class);
 	
 	private final ClaimBuilder builder;
 	private final ClaimStore store;
 	private final DHTPublisher publisher;
 	
 	@Inject
-	public ClaimsRoute(ClaimBuilder builder, ClaimStore store, DHTPublisher publisher) {
+	public ClaimSubmitRoute(ClaimBuilder builder, ClaimStore store, DHTPublisher publisher) {
 		this.builder = builder;
 		this.store = store;
 		this.publisher = publisher;

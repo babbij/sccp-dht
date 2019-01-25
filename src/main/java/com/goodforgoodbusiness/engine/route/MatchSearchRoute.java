@@ -1,26 +1,34 @@
 package com.goodforgoodbusiness.engine.route;
 
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.concat;
+
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
+import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
 import com.goodforgoodbusiness.webapp.error.BadRequestException;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-public class MatchesRoute implements Route {
-	private static final Logger log = Logger.getLogger(MatchesRoute.class);
+@Singleton
+public class MatchSearchRoute implements Route {
+	private static final Logger log = Logger.getLogger(MatchSearchRoute.class);
 	
+	private final ClaimStore store;
 	private final DHTSearcher searcher;
 	
 	@Inject
-	public MatchesRoute(DHTSearcher searcher) {
+	public MatchSearchRoute(ClaimStore store, DHTSearcher searcher) {
+		this.store = store;
 		this.searcher = searcher;
 	}
 	
@@ -37,8 +45,15 @@ public class MatchesRoute implements Route {
 				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
 			}
 			
+			// combine DHT results with locally stored results
 			// return found results
-			return JSON.encode(searcher.search(triple));
+			return JSON.encode(
+				concat(
+					store.search(triple),
+					searcher.search(triple)
+				)
+				.collect(toSet())
+			);
 		}
 		else {
 			throw new BadRequestException("Must specify a triple");

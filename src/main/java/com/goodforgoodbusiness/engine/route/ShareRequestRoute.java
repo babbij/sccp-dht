@@ -11,11 +11,13 @@ import com.goodforgoodbusiness.webapp.ContentType;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
+@Singleton
 public class ShareRequestRoute implements Route {
 	private static final Logger log = Logger.getLogger(ShareRequestRoute.class);
 	
