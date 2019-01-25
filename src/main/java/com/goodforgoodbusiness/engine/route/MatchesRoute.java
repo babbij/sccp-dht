@@ -29,13 +29,19 @@ public class MatchesRoute implements Route {
 		res.type(ContentType.json.getContentTypeString());
 		
 		var triple = JSON.decode(req.queryParams("pattern"), Triple.class);
-		log.info("Matches called for " + triple);
 		
-		if ((triple.getSubject() == Node.ANY) && (triple.getObject() == Node.ANY)) {
-			throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
+		if (triple != null) {
+			log.info("Matches called for " + triple);
+			
+			if ((triple.getSubject() == Node.ANY) && (triple.getObject() == Node.ANY)) {
+				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
+			}
+			
+			// return found results
+			return JSON.encode(searcher.search(triple));
 		}
-		
-		// return found results
-		return JSON.encode(searcher.search(triple));
+		else {
+			throw new BadRequestException("Must specify a triple");
+		}
 	}
 }
