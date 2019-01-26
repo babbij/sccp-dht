@@ -47,6 +47,7 @@ public class DHTSearcher {
 			return dht.getPointers(pattern)
 				.map(data -> decryptPointer(triple, data))
 				.filter(Objects::nonNull)
+				.filter(pointer -> !store.contains(pointer.getClaimId())) // only fetch if we don't know it.
 				.map(pointer -> fetchClaim(pointer))
 				.filter(Objects::nonNull)
 			;
@@ -85,9 +86,7 @@ public class DHTSearcher {
 		if (encryptedClaim != null) {
 			try {
 				log.info("Decrypting claim: " + encryptedClaim.getId());
-				var claim = new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim);
-				store.save(claim);
-				return claim;
+				return new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim);
 			}
 			catch (EncryptionException e) {
 				log.error("Error decrypting claim", e); 
