@@ -17,30 +17,40 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class MemClaimStore implements ClaimStore {
+	private final Set<String> storedIds = new HashSet<>();
 	private final Map<String, Set<StoredClaim>> storedClaims = new HashMap<>();
 	
 	@Override
+	public boolean contains(String claimId) {
+		return storedIds.contains(claimId);
+	}
+	
+	@Override
 	public void save(StoredClaim claim) {
-		// store triples in local store.
-		// we can recalculate the patterns since the claim is fully unencrypted.
-		
-		claim
-			.getTriples()
-			.map(Pattern::forPublish)
-			.flatMap(Set::stream)
-			.forEach(pattern -> { 
-				synchronized (storedClaims) {
-					if (storedClaims.containsKey(pattern)) {
-						storedClaims.get(pattern).add(claim);
+		synchronized (storedClaims) {
+			// store triples in local store.
+			// we can recalculate the patterns since the claim is fully unencrypted.
+			
+			claim
+				.getTriples()
+				.map(Pattern::forPublish)
+				.flatMap(Set::stream)
+				.forEach(pattern -> { 
+					synchronized (storedClaims) {
+						if (storedClaims.containsKey(pattern)) {
+							storedClaims.get(pattern).add(claim);
+						}
+						else {
+							var set = new HashSet<StoredClaim>();
+							set.add(claim);
+							storedClaims.put(pattern, set);
+						}
 					}
-					else {
-						var set = new HashSet<StoredClaim>();
-						set.add(claim);
-						storedClaims.put(pattern, set);
-					}
-				}
-			});
-		;
+				});
+			;
+			
+			storedIds.add(claim.getId());
+		}
 	}
 
 	@Override

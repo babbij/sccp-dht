@@ -24,6 +24,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.ReplaceOptions;
 
 @Singleton
 public class MongoClaimStore implements ClaimStore {
@@ -56,8 +57,10 @@ public class MongoClaimStore implements ClaimStore {
 		// store claim as full JSON document
 		database
 			.getCollection(CL_CLAIM)
-			.insertOne(
-				Document.parse(JSON.encodeToString(claim))
+			.replaceOne(
+				eq("inner_envelope.hashkey", claim.getId()),
+				Document.parse(JSON.encodeToString(claim)),
+				new ReplaceOptions().upsert(true)
 			);
 		
 		// store patterns as pointers, similar to DHT
@@ -107,5 +110,16 @@ public class MongoClaimStore implements ClaimStore {
 		else {
 			return null;
 		}
+	}
+	
+	@Override
+	public boolean contains(String claimId) {
+		long count = database
+			.getCollection(CL_CLAIM)
+			.countDocuments(
+				eq("inner_envelope.hashkey", claimId)
+			);
+		
+		return count > 0;
 	}
 }
