@@ -30,41 +30,53 @@ public class DHTAccessGovernor {
 	private Cache<Triple, Object> tracker;
 	
 	@Inject
-	public DHTAccessGovernor(@Named("dht.cache.duration") String cacheDuration) {
-		this(Duration.parse(cacheDuration).getSeconds());
+	public DHTAccessGovernor(@Named("dht.cache.enabled") boolean enabled, @Named("dht.cache.duration") String cacheDuration) {
+		this(enabled, Duration.parse(cacheDuration).getSeconds());
 	}
 	
-	public DHTAccessGovernor(long cacheDurationSeconds) {
-		this.tracker = CacheBuilder
-			.newBuilder()
-			.expireAfterWrite(Duration.ofSeconds(cacheDurationSeconds))
-			.build()
-		;
+	public DHTAccessGovernor(boolean enabled, long cacheDurationSeconds) {
+		if (enabled) {
+			this.tracker = CacheBuilder
+				.newBuilder()
+				.expireAfterWrite(Duration.ofSeconds(cacheDurationSeconds))
+				.build()
+			;
+		}
+		else {
+			this.tracker = null;
+		}
 	}
 	
 	public boolean allow(Triple triple) {
-		// calculate 'wider' combinations that would have netted this triple
-		var any = Pattern
-			.combinations(triple)
-			.stream()
-			.filter(c -> (tracker.getIfPresent(c) != null))
-			.findFirst()
-			.map(c -> true)
-			.orElse(false)
-		;
-		
-		if (any) {
-			return false; // present
+		if (tracker != null) {
+			// calculate 'wider' combinations that would have netted this triple
+			var any = Pattern
+				.combinations(triple)
+				.stream()
+				.filter(c -> (tracker.getIfPresent(c) != null))
+				.findFirst()
+				.map(c -> true)
+				.orElse(false)
+			;
+			
+			if (any) {
+				return false; // present
+			}
+			else {
+				tracker.put(triple, PRESENT);
+				return true;
+			}
 		}
 		else {
-			tracker.put(triple, PRESENT);
 			return true;
 		}
 	}
 	
 	public void invalidate(ShareKeySpec spec) {
-		// for the moment, do full invalidation here.
-		// become more nuanced w.r.t. received SharedAcceptRequests with time.
-		tracker.invalidateAll();
+		if (tracker != null) {
+			// for the moment, do full invalidation here.
+			// become more nuanced w.r.t. received SharedAcceptRequests with time.
+			tracker.invalidateAll();
+		}
 	}
 }
