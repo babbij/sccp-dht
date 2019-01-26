@@ -42,11 +42,13 @@ public class RemoteDHT implements DHT {
 
 		@Override
 		public Set<String> getPointers(String pattern) throws RemoteException {
+			log.info("Remote request for pointers for " + pattern);
 			return pointers.getOrDefault(pattern, emptySet());
 		}
 
 		@Override
 		public String getClaim(String id) throws RemoteException {
+			log.info("Remote request for claim " + id);
 			return claims.get(id);
 		}
 	}
