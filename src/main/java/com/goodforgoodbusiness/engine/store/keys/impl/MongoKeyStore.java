@@ -23,7 +23,6 @@ import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.IndexOptions;
 
 @Singleton
 public class MongoKeyStore implements ShareKeyStore {
@@ -44,8 +43,8 @@ public class MongoKeyStore implements ShareKeyStore {
 		keyCollection.createIndex(ascending("sub"));
 		keyCollection.createIndex(ascending("pre"));
 		keyCollection.createIndex(ascending("obj"));
-		
-		keyCollection.createIndex(ascending("key"), new IndexOptions().unique(true));
+
+//		keyCollection.createIndex(ascending("key"), new IndexOptions().unique(true)); // XXX doesn't work - keys too big for index
 	}
 	
 	@Override
