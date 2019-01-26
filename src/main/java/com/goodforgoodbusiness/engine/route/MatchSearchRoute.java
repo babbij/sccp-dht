@@ -1,7 +1,6 @@
 package com.goodforgoodbusiness.engine.route;
 
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.concat;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -45,15 +44,18 @@ public class MatchSearchRoute implements Route {
 				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
 			}
 			
-			// combine DHT results with locally stored results
-			// return found results
-			return JSON.encode(
-				concat(
-					store.search(triple),
-					searcher.search(triple)
-				)
-				.collect(toSet())
-			);
+			// search for remote claims, store in local store
+			var newClaims = searcher.search(triple).collect(toSet());
+			log.debug("new = " + newClaims);
+			newClaims.forEach(store::save);
+			
+			// retrieve all claims from local store
+			// includes those just fetched and others we already knew.
+			var knownClaims = store.search(triple).collect(toSet());
+			log.debug("known = " + knownClaims);
+			
+			// return known claims
+			return JSON.encode(knownClaims);
 		}
 		else {
 			throw new BadRequestException("Must specify a triple");

@@ -34,13 +34,12 @@ public class ClaimSubmitRoute implements Route {
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
 		res.type(ContentType.json.getContentTypeString());
-		log.info("Processing posted claim");
 		
-		// build claim + store a copy of it locally
 		var claim = builder.buildFrom(JSON.decode(req.body(), SubmittableClaim.class));
-		store.save(claim);
+		log.info("Processing posted claim: " + claim);
 		
-		// now on to DHT
+		// store locally + push to DHt
+		store.save(claim);
 		publisher.publishClaim(claim);
 		
 		// result is { "id" : <hash> }
