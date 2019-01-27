@@ -3,6 +3,7 @@ package com.goodforgoodbusiness.engine.crypto;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -73,15 +74,21 @@ public class PointerCrypter {
 	 * beg/end may be null for no limits on date/time.
 	 */
 	public EncodeableShareKey makeShareKey(ShareKeySpec spec, ShareRangeSpec range) throws KPABEException {
-		var pattern = Pattern.forSpec(spec);
-		
-		if (range.getStart() != null) {
-			pattern += " AND time >= " + range.getStart().toInstant().toEpochMilli() / 1000;
-		}
-		
-		if (range.getEnd() != null) {
-			pattern += " AND time <  " + range.getEnd().toInstant().toEpochMilli() / 1000;;
-		}
+		var pattern = 
+			Pattern.forSpec(spec)
+			+ 
+			Optional
+				.ofNullable(range.getStart())
+				.map(datetime -> datetime.toInstant().toEpochMilli() / 1000)
+				.map(epochsec -> " AND time >= " + epochsec)
+				.orElse("")
+			+
+			Optional
+				.ofNullable(range.getEnd())
+				.map(datetime -> datetime.toInstant().toEpochMilli() / 1000)
+				.map(epochsec -> " AND time <  " + epochsec)
+				.orElse("")
+		;
 		
 		return new EncodeableShareKey(kpabe.shareKey(pattern));
 	}
