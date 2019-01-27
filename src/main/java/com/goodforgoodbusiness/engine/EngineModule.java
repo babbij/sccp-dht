@@ -87,7 +87,7 @@ public class EngineModule extends AbstractModule {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		var configFile = args.length > 0 ? args[0] : "engine.properties";
+		var configFile = args.length > 0 ? args[0] : "env.properties";
 		
 		createInjector(new EngineModule(loadConfig(EngineModule.class, configFile)))
 			.getInstance(Webapp.class)

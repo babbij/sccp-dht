@@ -173,7 +173,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>com.goodforgoodbusiness.rdfjava.RDFApp</mainClass>
+							<mainClass>com.goodforgoodbusiness.engine.EngineModule</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -184,7 +184,7 @@
 				<version>2.4</version>
 				<configuration>
 					<descriptors>
-						<descriptor>src/assembly/assembly.xml</descriptor>
+						<descriptor>assembly.xml</descriptor>
 					</descriptors>
 				</configuration>
 				<executions>
