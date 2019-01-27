@@ -1,14 +1,12 @@
 package com.goodforgoodbusiness.engine.dht.impl;
 
-import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -23,12 +21,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+/**
+ * Store claims on our pseudo-DHT for testing.
+ * 
+ * Extends MongoDHT because it stores claims there for retrieval,
+ * but this time by the same instance and others over RMI.
+ */
 @Singleton
-public class RemoteDHT implements DHT {
+public class RemoteDHT extends MongoDHT implements DHT {
 	private static final Logger log = Logger.getLogger(RemoteDHT.class);
-	
-	private Map<String, Set<String>> pointers = new HashMap<>();
-	private Map<String, String> claims = new HashMap<>();
 	
 	private class RemoteDHTNode implements DHTNode {
 		@Override
@@ -43,28 +44,42 @@ public class RemoteDHT implements DHT {
 		@Override
 		public Set<String> getPointers(String pattern) throws RemoteException {
 			log.info("Remote request for pointers for " + pattern);
-			return pointers.getOrDefault(pattern, emptySet());
+			
+			// defer to MongoDHT
+			return RemoteDHT.super
+				.getPointers(pattern)
+				.collect(toSet())
+			;
 		}
 
 		@Override
 		public String getClaim(String id) throws RemoteException {
 			log.info("Remote request for claim " + id);
-			return claims.get(id);
+			
+			// defer to MongoDHT
+			return Optional
+				.ofNullable(RemoteDHT.super.getClaim(id))
+				.map(JSON::encodeToString)
+				.orElse(null)
+			;
 		}
 	}
 	
-	private final DHTClient client;
+	private final DHTClient dhtClient;
 	private final DHTNode node;
 	private final Remote nodeStub;
 	private final String registryName;
 
 	@Inject
 	public RemoteDHT(
+		@Named("dht.store.connectionUrl") String connectionUrl,
 		@Named("dht.registry.name") String registryName,
 		@Named("dht.registry.host") String registryHost,
 		@Named("dht.registry.port") int registryPort) throws RemoteException {
 		
-		this.client = new DHTClient(registryName, registryHost, registryPort);
+		super(connectionUrl);
+		
+		this.dhtClient = new DHTClient(registryName, registryHost, registryPort);
 		this.registryName = registryName;
 		
 		this.node = new RemoteDHTNode();
@@ -91,7 +106,7 @@ public class RemoteDHT implements DHT {
 	public Stream<String> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 	
-		return client
+		return dhtClient
 			.getPointers(pattern)
 			.values()
 			.stream()
@@ -101,25 +116,10 @@ public class RemoteDHT implements DHT {
 	}
 
 	@Override
-	public void putPointer(String pattern, String data) {
-		log.debug("Put pointer: " + pattern);
-		
-		var existing = pointers.get(pattern);
-		if (existing != null) {
-			existing.add(data);
-		}
-		else {
-			var newSet = new HashSet<String>();
-			newSet.add(data);
-			pointers.put(pattern, newSet);
-		}
-	}
-	
-	@Override
 	public EncryptedClaim getClaim(String id) {
 		log.debug("Get claim: " + id);
 		
-		return client
+		return dhtClient
 			.getClaims(id)
 			.values()
 			.stream()
@@ -129,11 +129,4 @@ public class RemoteDHT implements DHT {
 			.orElse(null)
 		;
 	}
-
-	@Override
-	public void putClaim(EncryptedClaim claim) {
-		log.debug("Put claim: " + claim.getId());
-		claims.put(claim.getId(), JSON.encodeToString(claim));
-	}
-
 }
