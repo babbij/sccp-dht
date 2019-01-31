@@ -57,9 +57,9 @@ public class ShareRequestRoute implements Route {
 		log.info("Processing share request");
 		
 		var keySpec = new ShareKeySpec(
-			Optional.of(req.queryParams("sub")),
-			Optional.of(req.queryParams("pre")),
-			Optional.of(req.queryParams("obj"))
+			Optional.ofNullable(req.queryParams("sub")),
+			Optional.ofNullable(req.queryParams("pre")),
+			Optional.ofNullable(req.queryParams("obj"))
 		);
 		
 		var rangeSpec = new ShareRangeSpec(

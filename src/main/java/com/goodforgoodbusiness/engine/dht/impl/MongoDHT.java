@@ -29,7 +29,7 @@ public class MongoDHT implements DHT {
 	private static final Logger log = Logger.getLogger(MongoDHT.class);
 	
 	// Mongo doesn't need meta but we can use a single instance as a type check
-	protected static final DHTPointerMeta META = new DHTPointerMeta();
+	public static final DHTPointerMeta META = new DHTPointerMeta();
 	
 	private static final String CL_INDEX = "index";
 	private static final String CL_CLAIM = "claim";

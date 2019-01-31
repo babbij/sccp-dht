@@ -1,19 +1,22 @@
 package com.goodforgoodbusiness.engine.dht.impl.remote;
 
-import static java.util.Collections.emptySet;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.concat;
 
+import java.net.MalformedURLException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import java.rmi.registry.LocateRegistry;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.dht.RosterClient;
-import com.goodforgoodbusiness.dht.RosterException;
 import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.DHTPointer;
 import com.goodforgoodbusiness.engine.dht.DHTPointerMeta;
@@ -31,134 +34,86 @@ import com.google.inject.name.Named;
  * but this time by the same instance and others over RMI.
  */
 @Singleton
-public class RemoteDHT extends MongoDHT implements DHT {
+public class RemoteDHT implements DHT {
 	private static final Logger log = Logger.getLogger(RemoteDHT.class);
 	
-	public static class RemoteNodeWrapper implements DHTNode {
-		private DHTNode node;
-		
-		public RemoteNodeWrapper(DHTNode node) {
-			this.node = node;
-		}
-		
-		@Override
-		public void ping() {
-			throw new RuntimeException("Don't call ping on this wrapper");
-		}
-		
-		public Set<String> getPointers(String pattern) {
-			try {
-				return node.getPointers(pattern);
-			}
-			catch (RemoteException e) {
-				log.warn("RemoteException from a node, soft fail (" + e.getMessage() + ")");
-				return emptySet();
-			}
-		}
-		
-		public String getClaim(String id) {
-			try {
-				return node.getClaim(id);
-			}
-			catch (RemoteException e) {
-				log.warn("RemoteException from a node, soft fail (" + e.getMessage() + ")");
-				return null;
-			}
-		}
-	}
+	private final MongoDHT mongo;
+	private final List<String> nodeUrls;
 	
-	private class DHTNodeImpl extends UnicastRemoteObject implements DHTNode {
-		protected DHTNodeImpl() throws RemoteException {
-			super();
-		}
-
-		@Override
-		public void ping() throws RemoteException {
-			log.debug("Pong");
-		}
-
-		@Override
-		public Set<String> getPointers(String pattern) throws RemoteException {
-			log.info("Remote request for pointers for " + pattern);
-			
-			// defer to MongoDHT
-			return RemoteDHT.super
-				.getPointers(pattern)
-				.map(dhtp -> dhtp.getData())
-				.collect(toSet())
-			;
-		}
-
-		@Override
-		public String getClaim(String id) throws RemoteException {
-			log.info("Remote request for claim " + id);
-			
-			// defer to MongoDHT
-			return Optional
-				.ofNullable(RemoteDHT.super.getClaim(id, MongoDHT.META))
-				.map(JSON::encodeToString)
-				.orElse(null)
-			;
-		}
-	};
-	
-	private final RosterClient<DHTNode> client;
-
 	@Inject
 	public RemoteDHT(
 		@Named("dhtstore.connectionUrl") String connectionUrl,
-		@Named("dht.rosterUrl") String rosterUrl)  throws RosterException, RemoteException {
+		@Named("dht.port") int port,
+		@Named("dht.nodes") String nodeList) throws RemoteException, AlreadyBoundException {
 		
-		super(connectionUrl);
-		this.client = new RosterClient<DHTNode>(rosterUrl, DHTNode.class, new DHTNodeImpl());
+		this.mongo = new MongoDHT(connectionUrl);
+		this.nodeUrls = 
+			asList(nodeList.split(","))
+				.stream()
+				.map(String::trim)
+				.collect(toList())
+		;
+		
+		// create a registry for self and bind in to it
+		var registry = LocateRegistry.createRegistry(port);
+		registry.bind("node", new RemoteDHTNodeImpl(mongo));
+	}
+	
+	@Override
+	public void putPointer(String pattern, String data) {
+		mongo.putPointer(pattern, data);
 	}
 	
 	@Override
 	public Stream<DHTPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
-		try {
-			return client
-				.getRegistrations()
-				.flatMap(reg -> {
-					try {
-						return reg.getRemote()
-							.getPointers(pattern)
-							.stream()
-							.map(data -> 
-								new DHTPointer(data, new DHTPointerMeta(singletonMap("location", reg.getLocation())))
-							)
-						;
-					}
-					catch (RemoteException e) {
-						// silent fail
-						return Stream.<DHTPointer>empty();
-					}
-				})
-			;
+		var result = Stream.<DHTPointer>empty();
+		
+		for (String nodeUrl : nodeUrls) {
+			try {
+				var node = (RemoteDHTNode)Naming.lookup(nodeUrl);
+				result = concat(
+					node.getPointers(pattern)
+						.stream()
+						.map(data -> new DHTPointer(data, new DHTPointerMeta(singletonMap("node", nodeUrl)))),
+					result
+				);
+			}
+			catch (RemoteException | MalformedURLException | NotBoundException e) {
+				log.error("Could not fetch claim: " + e.getMessage());
+				// skip - take no action
+			}
 		}
-		catch (RosterException e) {
-			log.error("Error getting pointers", e);
-			return Stream.empty();
-		}
+		
+		return result;
 	}
 
+	@Override
+	public void putClaim(EncryptedClaim claim) {
+		mongo.putClaim(claim);
+	}
+	
 	@Override
 	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
 		log.debug("Get claim: " + id);
 		
-		return meta.get("location")
-			.flatMap(loc -> client.lookupByLocation(loc))
-			.flatMap(reg -> {
-				try {
-					return Optional.ofNullable(reg.getRemote().getClaim(id));
-				}
-				catch (RemoteException e) {
-					log.error("Could not fetch claim: " + e.getMessage());
-					return Optional.empty();
-				}
-			})
-			.map(s -> JSON.decode(s, EncryptedClaim.class))
-		;
+		try {
+			var nodeURL = meta.get("node");
+			if (nodeURL.isPresent()) {
+				var node = (RemoteDHTNode)Naming.lookup(nodeURL.get());
+				return Optional
+					.ofNullable(node.getClaim(id))
+					.map(result -> JSON.decode(result, EncryptedClaim.class))
+				;
+			}
+			else {
+				return Optional.empty();
+			}
+		}
+		catch (RemoteException | MalformedURLException | NotBoundException e) {
+			log.error("Could not fetch claim: " + e.getMessage());
+			return Optional.empty();
+		}
 	}
 }
