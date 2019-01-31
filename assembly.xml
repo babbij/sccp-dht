@@ -34,7 +34,7 @@
 			<directory>${project.parent.basedir}/lib/kpabe/lib/native/</directory>
 			<outputDirectory>/native</outputDirectory>
 			<includes>
-				<include>*</include>
+				<include>*/*</include>
 			</includes>
 		</fileSet>
 	</fileSets>
