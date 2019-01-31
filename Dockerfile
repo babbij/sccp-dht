@@ -27,5 +27,6 @@ FROM openjdk:11
 WORKDIR /app
 COPY --from=0 /build/dhtengine/target/*.zip /app
 RUN unzip /app/*.zip -d /app
+ENV LD_LIBRARY_PATH /app/native/linux/
 
 CMD java -Djava.library.path=/app/native/linux/ -jar *.jar
