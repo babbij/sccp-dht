@@ -23,31 +23,31 @@ public class MemKeyStore implements ShareKeyStore {
 	
 	@Override
 	public void saveKey(ShareKeySpec idx, EncodeableShareKey key) {
-		if (idx.getSubject() != null) {
-			var bySubjectIdx = bySubject.get(idx.getSubject());
+		if (idx.getSubjectX().isPresent()) {
+			var bySubjectIdx = bySubject.get(idx.getSubjectX().get());
 			if (bySubjectIdx == null) {
 				bySubjectIdx = new LinkedList<>();
-				bySubject.put(idx.getSubject(), bySubjectIdx);
+				bySubject.put(idx.getSubjectX().get(), bySubjectIdx);
 			}
 			
 			bySubjectIdx.add(key);
 		}
 		
-		if (idx.getPredicate() != null) {
-			var byPredicateIdx = byPredicate.get(idx.getPredicate());
+		if (idx.getPredicate().isPresent()) {
+			var byPredicateIdx = byPredicate.get(idx.getPredicate().get());
 			if (byPredicateIdx == null) {
 				byPredicateIdx = new LinkedList<>();
-				byPredicate.put(idx.getPredicate(), byPredicateIdx);
+				byPredicate.put(idx.getPredicate().get(), byPredicateIdx);
 			}
 			
 			byPredicateIdx.add(key);
 		}
 		
-		if (idx.getObject() != null) {
-			var byObjectIdx = byObject.get(idx.getObject());
+		if (idx.getObject().isPresent()) {
+			var byObjectIdx = byObject.get(idx.getObject().get());
 			if (byObjectIdx == null) {
 				byObjectIdx = new LinkedList<>();
-				byObject.put(idx.getObject(), byObjectIdx);
+				byObject.put(idx.getObject().get(), byObjectIdx);
 			}
 			
 			byObjectIdx.add(key);
@@ -60,7 +60,7 @@ public class MemKeyStore implements ShareKeyStore {
 		
 		return 
 			concat(
-				bySubject.getOrDefault(spec.getSubject(), emptyList()).stream(),
+				bySubject.getOrDefault(spec.getSubjectX().get(), emptyList()).stream(),
 				concat(
 					byPredicate.getOrDefault(spec.getPredicate(), emptyList()).stream(),
 					byObject.getOrDefault(spec.getObject(), emptyList()).stream()

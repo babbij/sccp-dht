@@ -3,7 +3,7 @@ package com.goodforgoodbusiness.engine.dht;
 import static java.util.stream.Stream.empty;
 
 import java.security.InvalidKeyException;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.jena.graph.Triple;
@@ -45,54 +45,58 @@ public class DHTSearcher {
 			// pointer -> encrypted claim -> stored claim
 			// check for nulls at each stage (not errors)
 			return dht.getPointers(pattern)
-				.map(data -> decryptPointer(triple, data))
-				.filter(Objects::nonNull)
-				.filter(pointer -> !store.contains(pointer.getClaimId())) // only fetch if we don't know it.
-				.map(pointer -> fetchClaim(pointer))
-				.filter(Objects::nonNull)
+				.map(dhtPointer ->
+					decryptPointer(triple, dhtPointer.getData())
+						.filter(pointer -> !store.contains(pointer.getClaimId())) // only fetch if not known
+						.flatMap(pointer -> fetchClaim(pointer, dhtPointer.getMeta()))
+				)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 			;
 		}
 		else {
-			log.info("DHT cache hit for " + triple);
+			log.info("DHT governer deny on " + triple + " (recently accessed)");
 			return empty();
 		}
 	}
 	
-	private Pointer decryptPointer(Triple triple, String data) {			
+	private Optional<Pointer> decryptPointer(Triple triple, String data) {			
 		log.info("Decrypting pointer: " + data.substring(0, 10) + "...");
 		
 		try {
 			var result = crypter.decrypt(triple, data);
-			if (result != null) {
-				return result;
+			if (result.isEmpty()) {
+				log.info("Decryption failed (safe)");
 			}
-			else {
-				log.info("Decryption failed");
-				return null;
-			}
+			
+			return result;
 		}
 		catch (InvalidKeyException | KPABEException e) {
 			// unsuccessful decryption returns null
 			// if an Exception is thrown this is a legitimate error.
 			log.error("Error decrypting pointer", e);
-			return null;
+			return Optional.empty();
 		}
 	}
 	
-	private StoredClaim fetchClaim(Pointer pointer) {
+	private Optional<StoredClaim> fetchClaim(Pointer pointer, DHTPointerMeta meta) {
 		log.info("Fetching claim: " + pointer.getClaimId());
-		var encryptedClaim = dht.getClaim(pointer.getClaimId());
+		var encryptedClaimHolder = dht.getClaim(pointer.getClaimId(), meta);
 		
-		if (encryptedClaim != null) {
+		if (encryptedClaimHolder.isPresent()) {
+			var encryptedClaim = encryptedClaimHolder.get();
+			log.info("Decrypting claim: " + encryptedClaim.getId());
+			
 			try {
-				log.info("Decrypting claim: " + encryptedClaim.getId());
-				return new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim);
+				return Optional.of(new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim));
 			}
 			catch (EncryptionException e) {
-				log.error("Error decrypting claim", e); 
+				log.error("Error decrypting claim", e);
+				return Optional.empty();
 			}
 		}
-		
-		return null;
+		else {
+			return Optional.empty();
+		}
 	}
 }

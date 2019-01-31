@@ -3,7 +3,7 @@ package com.goodforgoodbusiness.engine.store.claim.impl;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Indexes.ascending;
 
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -94,22 +94,21 @@ public class MongoClaimStore implements ClaimStore {
 			)
 			.map(doc -> doc.getString("claim"))
 			.map(this::getClaim)
-			.filter(Objects::nonNull)
+			.filter(Optional::isPresent)
+			.map(Optional::get)
 		;
 	}
 	
-	private StoredClaim getClaim(String id) {
-		Document doc = database
-			.getCollection(CL_CLAIM)
-		 	.find(eq("inner_envelope.hashkey", id))
-		 	.first();
-		
-		if (doc != null) {
-			return JSON.decode(doc.toJson(), StoredClaim.class);
-		}
-		else {
-			return null;
-		}
+	private Optional<StoredClaim> getClaim(String id) {
+		return 
+			Optional.ofNullable(
+				database
+					.getCollection(CL_CLAIM)
+				 	.find(eq("inner_envelope.hashkey", id))
+				 	.first()
+			)
+			.map(doc -> JSON.decode(doc.toJson(), StoredClaim.class))
+		;
 	}
 	
 	@Override

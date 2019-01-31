@@ -1,5 +1,7 @@
 package com.goodforgoodbusiness.engine.route;
 
+import java.util.Optional;
+
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
@@ -55,9 +57,9 @@ public class ShareRequestRoute implements Route {
 		log.info("Processing share request");
 		
 		var keySpec = new ShareKeySpec(
-			req.queryParams("sub"),
-			req.queryParams("pre"),
-			req.queryParams("obj")
+			Optional.of(req.queryParams("sub")),
+			Optional.of(req.queryParams("pre")),
+			Optional.of(req.queryParams("obj"))
 		);
 		
 		var rangeSpec = new ShareRangeSpec(

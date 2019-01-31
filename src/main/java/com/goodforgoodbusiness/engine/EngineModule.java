@@ -18,7 +18,7 @@ import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
-import com.goodforgoodbusiness.engine.dht.impl.RemoteDHT;
+import com.goodforgoodbusiness.engine.dht.impl.remote.RemoteDHT;
 import com.goodforgoodbusiness.engine.route.ClaimSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;

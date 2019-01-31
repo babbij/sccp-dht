@@ -63,16 +63,16 @@ public class MongoKeyStore implements ShareKeyStore {
 	public Stream<EncodeableShareKey> findKeys(ShareKeySpec idx) {
 		var filters = new LinkedList<Bson>();
 		
-		if (idx.getSubject() != null) {
-			filters.add(eq("sub", idx.getSubject()));
+		if (idx.getSubjectX().isPresent()) {
+			filters.add(eq("sub", idx.getSubjectX().get()));
 		}
 		
-		if (idx.getPredicate() != null) {
-			filters.add(eq("pre", idx.getPredicate()));
+		if (idx.getPredicate().isPresent()) {
+			filters.add(eq("pre", idx.getPredicate().get()));
 		}
 		
-		if (idx.getObject() != null) {
-			filters.add(eq("obj", idx.getObject()));
+		if (idx.getObject().isPresent()) {
+			filters.add(eq("obj", idx.getObject().get()));
 		}
 		
 		return 

@@ -3,12 +3,15 @@ package com.goodforgoodbusiness.engine.dht.impl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
+import com.goodforgoodbusiness.engine.dht.DHTPointer;
+import com.goodforgoodbusiness.engine.dht.DHTPointerMeta;
 import com.goodforgoodbusiness.model.EncryptedClaim;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Singleton;
@@ -17,14 +20,22 @@ import com.google.inject.Singleton;
 public class MemDHT implements DHT {
 	private static final Logger log = Logger.getLogger(MemDHT.class);
 	
+	// Mem doesn't need meta but we can use a single instance as a type check
+	protected static final DHTPointerMeta META = new DHTPointerMeta();
+	
+	// store as String to test JSON encode/decode abilities 
 	private Map<String, Set<String>> pointers = new HashMap<>();
 
 	@Override
-	public Stream<String> getPointers(String pattern) {
+	public Stream<DHTPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
-		var set = pointers.get(pattern);
-		return (set != null) ? set.stream() : Stream.empty();
+		return Optional
+			.ofNullable(pointers.get(pattern))
+			.map(Set::stream)
+			.stream()
+			.flatMap(stream -> stream.map(data -> new DHTPointer(data, META)))
+		;
 	}
 
 	@Override
@@ -45,10 +56,18 @@ public class MemDHT implements DHT {
 	private Map<String, String> claims = new HashMap<>();
 	
 	@Override
-	public EncryptedClaim getClaim(String id) {
+	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
 		log.debug("Get claim: " + id);
-		var json = claims.get(id);
-		return (json != null) ? JSON.decode(json, EncryptedClaim.class) : null;
+		
+		if (meta == META) {
+			return Optional
+				.ofNullable(claims.get(id))
+				.map(json -> JSON.decode(json, EncryptedClaim.class))
+			;
+		}
+		else {
+			return Optional.empty();
+		}
 	}
 
 	@Override

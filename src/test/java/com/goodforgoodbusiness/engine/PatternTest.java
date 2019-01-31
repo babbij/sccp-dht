@@ -1,5 +1,7 @@
 package com.goodforgoodbusiness.engine;
 
+import java.util.Optional;
+
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -19,9 +21,9 @@ public class PatternTest {
 		
 		System.out.println(
 			Pattern.forSpec(new ShareKeySpec(
-				"https://twitter.com/ijmad8x",
-				"http://xmlns.com/foaf/0.1/name",
-				null
+				Optional.of("https://twitter.com/ijmad8x"),
+				Optional.of("http://xmlns.com/foaf/0.1/name"),
+				Optional.empty()
 			))
 		);
 		

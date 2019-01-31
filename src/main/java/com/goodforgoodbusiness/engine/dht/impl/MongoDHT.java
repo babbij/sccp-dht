@@ -4,12 +4,15 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Indexes.ascending;
 import static java.util.stream.StreamSupport.stream;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
+import com.goodforgoodbusiness.engine.dht.DHTPointer;
+import com.goodforgoodbusiness.engine.dht.DHTPointerMeta;
 import com.goodforgoodbusiness.model.EncryptedClaim;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
@@ -25,6 +28,9 @@ import com.mongodb.client.model.IndexOptions;
 public class MongoDHT implements DHT {
 	private static final Logger log = Logger.getLogger(MongoDHT.class);
 	
+	// Mongo doesn't need meta but we can use a single instance as a type check
+	protected static final DHTPointerMeta META = new DHTPointerMeta();
+	
 	private static final String CL_INDEX = "index";
 	private static final String CL_CLAIM = "claim";
 	
@@ -33,7 +39,7 @@ public class MongoDHT implements DHT {
 	private final MongoDatabase database;
 	
 	@Inject
-	public MongoDHT(@Named("dht.connectionUrl") String connectionUrl) {
+	public MongoDHT(@Named("dhtstore.connectionUrl") String connectionUrl) {
 		this.connectionString = new ConnectionString(connectionUrl);
 		this.client =  MongoClients.create(connectionString);
 		this.database = client.getDatabase(connectionString.getDatabase());
@@ -46,7 +52,7 @@ public class MongoDHT implements DHT {
 	}
 	
 	@Override
-	public Stream<String> getPointers(String pattern) {
+	public Stream<DHTPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
 		return 
@@ -57,7 +63,7 @@ public class MongoDHT implements DHT {
 					.spliterator(),
 				true
 			)
-			.map(doc -> doc.get("data").toString())
+			.map(doc -> new DHTPointer(doc.get("data").toString(), META))
 		;
 	}
 
@@ -75,17 +81,23 @@ public class MongoDHT implements DHT {
 	}
 	
 	@Override
-	public EncryptedClaim getClaim(String id) {
+	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
 		log.debug("Get claim: " + id);
 		
-		return JSON.decode(
-			database
-				.getCollection(CL_CLAIM)
-			 	.find(eq("inner_envelope.hashkey", id))
-			 	.first()
-			 	.toJson(),
-			 EncryptedClaim.class
-		);
+		if (meta == META) {
+			return 
+				Optional.ofNullable(
+					database
+						.getCollection(CL_CLAIM)
+					 	.find(eq("inner_envelope.hashkey", id))
+					 	.first()
+				)
+				.map(doc -> JSON.decode(doc.toJson(), EncryptedClaim.class))
+			;
+		}
+		else {
+			return Optional.empty();
+		}
 	}
 
 	@Override

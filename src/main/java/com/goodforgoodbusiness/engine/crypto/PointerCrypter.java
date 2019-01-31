@@ -2,12 +2,13 @@ package com.goodforgoodbusiness.engine.crypto;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.util.Objects;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.graph.Triple;
+import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
@@ -24,6 +25,8 @@ import com.google.inject.Inject;
  * Performs pointer encrypt/decrypt and maintains the keystore
  */
 public class PointerCrypter {
+	private static final Logger log = Logger.getLogger(PointerCrypter.class);
+	
 	private final KPABEInstance kpabe;
 	private final ShareKeyStore store;
 	
@@ -42,22 +45,23 @@ public class PointerCrypter {
 		return data;
 	}
 	
-	public Pointer decrypt(Triple triple, String data) throws KPABEException, InvalidKeyException {
+	public Optional<Pointer> decrypt(Triple triple, String data) throws KPABEException, InvalidKeyException {
 		return
 			store.findKeys(new ShareKeySpec(triple))
 				.map(EncodeableShareKey::toKeyPair)
 				.map(keyPair -> {
 					try {
-						return KPABEInstance.decrypt(data, keyPair);
+						return Optional.ofNullable(KPABEInstance.decrypt(data, keyPair));
 					}
 					catch (KPABEException | InvalidKeyException e) {
-						return null;
+						log.error("Error decrypting pointer", e);
+						return Optional.<String>empty();
 					}
 				})
-				.filter(Objects::nonNull)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.findFirst()
 				.map(json -> JSON.decode(json, Pointer.class))
-				.orElse(null)
 			;
 	}
 	
@@ -79,17 +83,21 @@ public class PointerCrypter {
 			+ 
 			Optional
 				.ofNullable(range.getStart())
-				.map(datetime -> datetime.toInstant().toEpochMilli() / 1000)
+				.map(PointerCrypter::toEpochSecs)
 				.map(epochsec -> " AND time >= " + epochsec)
 				.orElse("")
 			+
 			Optional
 				.ofNullable(range.getEnd())
-				.map(datetime -> datetime.toInstant().toEpochMilli() / 1000)
+				.map(PointerCrypter::toEpochSecs)
 				.map(epochsec -> " AND time <  " + epochsec)
 				.orElse("")
 		;
 		
 		return new EncodeableShareKey(kpabe.shareKey(pattern));
+	}
+	
+	private static long toEpochSecs(ZonedDateTime datetime) {
+		return datetime.toInstant().toEpochMilli() / 1000;
 	}
 }

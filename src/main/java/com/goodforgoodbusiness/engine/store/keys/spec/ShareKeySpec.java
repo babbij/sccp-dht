@@ -2,6 +2,8 @@ package com.goodforgoodbusiness.engine.store.keys.spec;
 
 import static com.goodforgoodbusiness.shared.TripleUtil.valueOf;
 
+import java.util.Optional;
+
 import org.apache.jena.graph.Triple;
 
 import com.google.gson.annotations.Expose;
@@ -23,10 +25,10 @@ public class ShareKeySpec {
 	@SerializedName("obj")
 	private String object;
 	
-	public ShareKeySpec(String sub, String pre, String obj) {
-		this.subject = sub;
-		this.predicate = pre;
-		this.object = obj;
+	public ShareKeySpec(Optional<String> sub, Optional<String> pre, Optional<String> obj) {
+		this.subject = sub.orElse(null);
+		this.predicate = pre.orElse(null);
+		this.object = obj.orElse(null);
 	}
 
 	public ShareKeySpec(Triple triple) {
@@ -37,24 +39,28 @@ public class ShareKeySpec {
 		);
 	}
 	
-	public String getSubject() {
-		return subject;
+	public Optional<String> getSubjectX() {
+		return Optional.ofNullable(subject);
 	}
 	
-	public String getPredicate() {
-		return predicate;
+	public Optional<String> getPredicate() {
+		return Optional.ofNullable(predicate);
 	}
 	
-	public String getObject() {
-		return object;
+	public Optional<String> getObject() {
+		return Optional.ofNullable(object);
+	}
+	
+	public String[] toValueArray() {
+		return new String [] { subject, predicate, object };
 	}
 	
 	@Override
 	public int hashCode() {
 		return
-			((subject != null) ? subject.hashCode() : 0) ^ 
-			((predicate != null) ? predicate.hashCode() : 0) ^ 
-			((object != null) ? object.hashCode() : 0)
+			getSubjectX().hashCode() ^ 
+			getPredicate().hashCode() ^ 
+			getObject().hashCode()
 		;
 	}
 	

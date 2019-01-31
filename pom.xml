@@ -13,7 +13,7 @@
 
 	<artifactId>dhtengine</artifactId>
 	<packaging>jar</packaging>
-	<name>SCCP DHT Engine for Java</name>
+	<name>SCCP DHT Engine</name>
 
 	<dependencies>
 		<dependency>

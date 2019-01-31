@@ -21,12 +21,12 @@ public class Pattern {
 	/**
 	 * Return the pattern to search the network for a particular Triple
 	 */
-	public static String forSearch(Triple pattern) throws PatternException {
+	private static String forArray(String [] values) throws PatternException {
 		try {
 			// prefixing 'a' here makes all signatures compatible
 			// with OpenABE which doesn't like attributes beginning with digits
 			//it also gives us an opportunity to version the hash!		
-			return PREFIX + Hex.encode(sha256(CBOR.forObject(toValueArray(pattern))));
+			return PREFIX + Hex.encode(sha256(CBOR.forObject(values)));
 		}
 		catch (Exception e) {
 			throw new PatternException("Pointer creation error", e);
@@ -34,17 +34,17 @@ public class Pattern {
 	}
 	
 	/**
+	 * Return the pattern to search the network for a particular Triple
+	 */
+	public static String forSearch(Triple pattern) throws PatternException {
+		return forArray(toValueArray(pattern));
+	}
+	
+	/**
 	 * Return the pattern for a particular share key specification
 	 */
 	public static String forSpec(ShareKeySpec spec) {
-		try {
-			return PREFIX + Hex.encode(sha256(CBOR.forObject(
-				new String [] { spec.getSubject(), spec.getPredicate(), spec.getObject() }
-			)));
-		}
-		catch (Exception e) {
-			throw new PatternException("Pointer creation error", e);
-		}
+		return forArray(spec.toValueArray());
 	}
 	
 	/**
