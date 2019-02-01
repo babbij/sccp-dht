@@ -46,7 +46,7 @@ public class DHTPublisher {
 	}
 	
 	public void publishClaim(StoredClaim claim) throws EncryptionException {
-		log.info("Publishing claim: " + claim.getId());
+		log.debug("Publishing claim: " + claim.getId());
 		
 		var crypter = new ClaimCrypter(); // with new symmetric key for claim
 		var encryptedClaim = crypter.encrypt(claim);
@@ -64,20 +64,27 @@ public class DHTPublisher {
 		// create a pointer for each pattern
 		// the pointer needs to be encrypted with _all_ the possible patterns + other attributes
 		var attributes = buildAttributes(patterns);
-		
-		patterns.forEach(pattern -> {
-			try {
-				var pointer = new Pointer(claim.getId(), crypter.getSecretKey().toEncodedString(), RANDOM.nextLong());
-				publishPointer(pattern, pointer, attributes);
-			}
-			catch (EncryptionException e) {
-				log.error(e);
-			}
-		});
+		patterns
+			.parallelStream()
+			.forEach(pattern -> {
+				try {
+					var pointer = new Pointer(
+						claim.getId(),
+						crypter.getSecretKey().toEncodedString(),
+						RANDOM.nextLong()
+					);
+					
+					publishPointer(pattern, pointer, attributes);
+				}
+				catch (EncryptionException e) {
+					log.error(e);
+				}
+			})
+		;
 	}
 	
 	private void publishPointer(String pattern, Pointer pointer, Set<String> attributes) throws EncryptionException {
-		log.info("Publishing pattern: " + pattern);
+		log.debug("Publishing pattern: " + pattern);
 		
 		try {
 			dht.putPointer(

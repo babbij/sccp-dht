@@ -21,6 +21,7 @@ import com.goodforgoodbusiness.engine.dht.DHTSearcher;
 import com.goodforgoodbusiness.engine.dht.impl.remote.RemoteDHT;
 import com.goodforgoodbusiness.engine.route.ClaimSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
+import com.goodforgoodbusiness.engine.route.PingRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
@@ -28,6 +29,7 @@ import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.shared.LogConfigurer;
 import com.goodforgoodbusiness.webapp.Resource;
 import com.goodforgoodbusiness.webapp.Webapp;
 import com.google.inject.AbstractModule;
@@ -69,6 +71,8 @@ public class EngineModule extends AbstractModule {
 			
 			var routes = newMapBinder(binder(), Resource.class, Route.class);
 			
+			routes.addBinding(get("/ping")).to(PingRoute.class);
+			
 			routes.addBinding(get("/matches")).to(MatchSearchRoute.class);
 			routes.addBinding(post("/claims")).to(ClaimSubmitRoute.class);
 			routes.addBinding(get("/share")).to(ShareRequestRoute.class);
@@ -87,9 +91,10 @@ public class EngineModule extends AbstractModule {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		var configFile = args.length > 0 ? args[0] : "env.properties";
+		var config = loadConfig(EngineModule.class, args.length > 0 ? args[0] : "env.properties");
+		LogConfigurer.init(EngineModule.class, config.getString("log.properties", "log4j.properties"));
 		
-		createInjector(new EngineModule(loadConfig(EngineModule.class, configFile)))
+		createInjector(new EngineModule(config))
 			.getInstance(Webapp.class)
 			.start()
 		;

@@ -52,11 +52,9 @@ public class Pattern {
 	 * various searches.
 	 */
 	public static Set<String> forPublish(Triple triple) {
-
-		
 		// generate possible pointers
 		return combinations(triple)
-			.stream()
+			.parallelStream()
 			.map(Pattern::forSearch)
 			.collect(Collectors.toSet())
 		;

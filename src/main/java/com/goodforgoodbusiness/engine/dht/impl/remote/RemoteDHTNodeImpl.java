@@ -23,7 +23,7 @@ public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTN
 
 	@Override
 	public Set<String> getPointers(String pattern) throws RemoteException {
-		log.info("Remote request for pointers for " + pattern);
+		log.debug("Remote request for pointers for " + pattern);
 			
 		// defer to MongoDHT
 		return store
@@ -35,7 +35,7 @@ public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTN
 
 	@Override
 	public String getClaim(String id) throws RemoteException {
-		log.info("Remote request for claim " + id);
+		log.debug("Remote request for claim " + id);
 			
 		// defer to MongoDHT
 		return store

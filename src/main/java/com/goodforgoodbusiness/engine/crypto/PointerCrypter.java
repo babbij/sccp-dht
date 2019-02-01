@@ -48,6 +48,7 @@ public class PointerCrypter {
 	public Optional<Pointer> decrypt(Triple triple, String data) throws KPABEException, InvalidKeyException {
 		return
 			store.findKeys(new ShareKeySpec(triple))
+				.parallel()
 				.map(EncodeableShareKey::toKeyPair)
 				.map(keyPair -> {
 					try {

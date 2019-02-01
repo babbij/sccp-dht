@@ -45,6 +45,7 @@ public class DHTSearcher {
 			// pointer -> encrypted claim -> stored claim
 			// check for nulls at each stage (not errors)
 			return dht.getPointers(pattern)
+				.parallel()
 				.map(dhtPointer ->
 					decryptPointer(triple, dhtPointer.getData())
 						.filter(pointer -> !store.contains(pointer.getClaimId())) // only fetch if not known
@@ -55,18 +56,18 @@ public class DHTSearcher {
 			;
 		}
 		else {
-			log.info("DHT governer deny on " + triple + " (recently accessed)");
+			log.debug("DHT governer deny on " + triple + " (recently accessed)");
 			return empty();
 		}
 	}
 	
 	private Optional<Pointer> decryptPointer(Triple triple, String data) {			
-		log.info("Decrypting pointer: " + data.substring(0, 10) + "...");
+		log.debug("Decrypting pointer: " + data.substring(0, 10) + "...");
 		
 		try {
 			var result = crypter.decrypt(triple, data);
 			if (result.isEmpty()) {
-				log.info("Decryption failed (safe)");
+				log.debug("Decryption failed (safe)");
 			}
 			
 			return result;
@@ -80,12 +81,12 @@ public class DHTSearcher {
 	}
 	
 	private Optional<StoredClaim> fetchClaim(Pointer pointer, DHTPointerMeta meta) {
-		log.info("Fetching claim: " + pointer.getClaimId());
+		log.debug("Fetching claim: " + pointer.getClaimId());
 		var encryptedClaimHolder = dht.getClaim(pointer.getClaimId(), meta);
 		
 		if (encryptedClaimHolder.isPresent()) {
 			var encryptedClaim = encryptedClaimHolder.get();
-			log.info("Decrypting claim: " + encryptedClaim.getId());
+			log.debug("Decrypting claim: " + encryptedClaim.getId());
 			
 			try {
 				return Optional.of(new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim));

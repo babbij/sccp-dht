@@ -92,6 +92,7 @@ public class MongoClaimStore implements ClaimStore {
 					.spliterator(),
 				true
 			)
+			.parallel()
 			.map(doc -> doc.getString("claim"))
 			.map(this::getClaim)
 			.filter(Optional::isPresent)

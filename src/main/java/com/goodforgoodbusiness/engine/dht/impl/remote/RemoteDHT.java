@@ -2,17 +2,15 @@ package com.goodforgoodbusiness.engine.dht.impl.remote;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Stream.concat;
 
-import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
@@ -37,6 +35,8 @@ import com.google.inject.name.Named;
 public class RemoteDHT implements DHT {
 	private static final Logger log = Logger.getLogger(RemoteDHT.class);
 	
+	private final RemoteDHTLookupCache nodeLookup = new RemoteDHTLookupCache();
+	
 	private final MongoDHT mongo;
 	private final List<String> nodeUrls;
 	
@@ -48,9 +48,10 @@ public class RemoteDHT implements DHT {
 		
 		this.mongo = new MongoDHT(connectionUrl);
 		this.nodeUrls = 
-			asList(nodeList.split(","))
+			asList(nodeList.trim().split(","))
 				.stream()
 				.map(String::trim)
+				.filter(s -> s.length() > 0)
 				.collect(toList())
 		;
 		
@@ -68,25 +69,41 @@ public class RemoteDHT implements DHT {
 	public Stream<DHTPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
-		var result = Stream.<DHTPointer>empty();
+		var results = nodeUrls
+			.parallelStream()
+			.map(nodeUrl -> getPointers(pattern, nodeUrl))
+		;
 		
-		for (String nodeUrl : nodeUrls) {
+		return results.flatMap(identity());
+	}
+	
+	private Stream<DHTPointer> getPointers(String pattern, String nodeUrl) {
+		log.debug("Trying node: " + nodeUrl);
+		
+		// run this twice in case of net problems
+		for (var i = 0; i < 2; i++) {
 			try {
-				var node = (RemoteDHTNode)Naming.lookup(nodeUrl);
-				result = concat(
+				var node = nodeLookup.lookup(nodeUrl);
+				return
 					node.getPointers(pattern)
 						.stream()
-						.map(data -> new DHTPointer(data, new DHTPointerMeta(singletonMap("node", nodeUrl)))),
-					result
-				);
+						.map(data -> new DHTPointer(data, new DHTPointerMeta(singletonMap("node", nodeUrl))))
+				;
 			}
-			catch (RemoteException | MalformedURLException | NotBoundException e) {
+			catch (RemoteException | ExecutionException e) {
 				log.error("Could not fetch claim: " + e.getMessage());
-				// skip - take no action
+				nodeLookup.invalidate(nodeUrl);
+				
+				try {
+					Thread.sleep(100);
+				}
+				catch (InterruptedException ee) {
+					// continue
+				}
 			}
 		}
 		
-		return result;
+		return Stream.empty();
 	}
 
 	@Override
@@ -97,23 +114,32 @@ public class RemoteDHT implements DHT {
 	@Override
 	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
 		log.debug("Get claim: " + id);
-		
-		try {
-			var nodeURL = meta.get("node");
-			if (nodeURL.isPresent()) {
-				var node = (RemoteDHTNode)Naming.lookup(nodeURL.get());
+		return meta.get("node").flatMap(url -> getClaim(id, url));
+	}
+	
+	private Optional<EncryptedClaim> getClaim(String id, String nodeUrl) {
+		// run this twice in case of net problems
+		for (var i = 0; i < 2; i++) {
+			try {
+				var node = nodeLookup.lookup(nodeUrl);
 				return Optional
 					.ofNullable(node.getClaim(id))
 					.map(result -> JSON.decode(result, EncryptedClaim.class))
 				;
 			}
-			else {
-				return Optional.empty();
+			catch (RemoteException | ExecutionException e) {
+				log.error("Could not fetch claim: " + e.getMessage());
+				nodeLookup.invalidate(nodeUrl);
+				
+				try {
+					Thread.sleep(100);
+				}
+				catch (InterruptedException ee) {
+					// continue
+				}
 			}
 		}
-		catch (RemoteException | MalformedURLException | NotBoundException e) {
-			log.error("Could not fetch claim: " + e.getMessage());
-			return Optional.empty();
-		}
+		
+		return Optional.empty();
 	}
 }

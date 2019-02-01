@@ -5,7 +5,6 @@ WORKDIR /build
 # download all dependencies
 COPY ./pom.xml /build/pom.xml
 COPY ./dhtengine/pom.xml /build/dhtengine/pom.xml
-COPY ./dhtmem/pom.xml /build/dhtmem/pom.xml
 COPY ./rdfendpoint/pom.xml /build/rdfendpoint/pom.xml
 COPY ./utils/pom.xml /build/utils/pom.xml
 
