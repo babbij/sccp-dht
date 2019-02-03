@@ -13,7 +13,8 @@ import java.util.Properties;
 import org.apache.commons.configuration2.Configuration;
 
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.LocalPointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
@@ -28,7 +29,7 @@ import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
-import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.shared.LogConfigurer;
 import com.goodforgoodbusiness.webapp.Resource;
 import com.goodforgoodbusiness.webapp.Webapp;
@@ -61,7 +62,7 @@ public class EngineModule extends AbstractModule {
 			bind(DHTPublisher.class);
 			bind(DHTSearcher.class);
 			bind(ClaimBuilder.class);
-			bind(PointerCrypter.class);
+			bind(PointerCrypter.class).to(LocalPointerCrypter.class);
 			
 			bind(DHT.class).to(RemoteDHT.class);
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
@@ -84,10 +85,11 @@ public class EngineModule extends AbstractModule {
 	}
 	
 	@Provides @Singleton
-	protected KPABEInstance getKPABE(
+	protected KPABELocalInstance getKPABE(
 		@Named("kpabe.publicKey") String publicKey,
 		@Named("kpabe.secretKey") String privateKey) throws InvalidKeyException {
-		return KPABEInstance.forKeys(publicKey, privateKey);
+		
+		return KPABELocalInstance.forKeys(publicKey, privateKey);
 	}
 	
 	public static void main(String[] args) throws Exception {

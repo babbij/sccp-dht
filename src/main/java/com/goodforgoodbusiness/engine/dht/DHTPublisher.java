@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.model.Pointer;
@@ -108,7 +108,7 @@ public class DHTPublisher {
 		return
 			concat(
 				patterns.stream(),
-				of("time = " + Long.toString(currentTimeMillis() / 1000L))
+				of("time = " + Long.toString(currentTimeMillis() / 1000L), "test") // XXX remove test later!
 			)
 			.collect(toSet())
 		;

@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareRangeSpec;

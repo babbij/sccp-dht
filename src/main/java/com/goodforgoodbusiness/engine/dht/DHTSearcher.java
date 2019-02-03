@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;

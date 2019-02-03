@@ -36,7 +36,6 @@ public class MatchSearchRoute implements Route {
 		res.type(ContentType.json.getContentTypeString());
 		
 		var triple = JSON.decode(req.queryParams("pattern"), Triple.class);
-		
 		if (triple != null) {
 			log.info("Matches called for " + triple);
 			
@@ -46,13 +45,13 @@ public class MatchSearchRoute implements Route {
 			
 			// search for remote claims, store in local store
 			var newClaims = searcher.search(triple).collect(toSet());
-			log.debug("new = " + newClaims);
+			if (log.isDebugEnabled()) log.debug("new = " + newClaims);
 			newClaims.forEach(store::save);
 			
 			// retrieve all claims from local store
 			// includes those just fetched and others we already knew.
 			var knownClaims = store.search(triple).collect(toSet());
-			log.debug("known = " + knownClaims);
+			if (log.isDebugEnabled()) log.debug("known = " + knownClaims);
 			
 			// return known claims
 			return JSON.encode(knownClaims);

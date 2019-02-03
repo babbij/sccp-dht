@@ -2,7 +2,7 @@ package com.goodforgoodbusiness.engine.route;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;

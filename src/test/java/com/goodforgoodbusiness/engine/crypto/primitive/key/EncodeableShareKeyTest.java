@@ -1,12 +1,11 @@
 package com.goodforgoodbusiness.engine.crypto.primitive.key;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class EncodeableShareKeyTest {
 	public static void main(String[] args) throws Exception {
-		var instance = KPABEInstance.newKeys();
+		var instance = KPABELocalInstance.newKeys();
 		
 		var keyPair = instance.shareKey("foo");
 		var encodeablePair = new EncodeableShareKey(keyPair);

@@ -8,11 +8,11 @@ import org.apache.jena.graph.Triple;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
-import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 
 public class ShareKeyStoreTest {
 	public static void main(String[] args) throws Exception {
-		var abe = KPABEInstance.newKeys();
+		var abe = KPABELocalInstance.newKeys();
 		var shareKey = new EncodeableShareKey(abe.shareKey("foo"));
 		
 		var s = createURI("https://twitter.com/ijmad8x");

@@ -1,10 +1,10 @@
 package com.goodforgoodbusiness.engine.crypto;
 
-import com.goodforgoodbusiness.kpabe.KPABEInstance;
+import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 
 public class KPABETest {
 	public static void main(String[] args) throws Exception {
-		var instance = KPABEInstance.newKeys();
+		var instance = KPABELocalInstance.newKeys();
 		
 		System.out.println("public = " + instance.getPublicKey().toString());
 		
