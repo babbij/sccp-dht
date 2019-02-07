@@ -2,12 +2,11 @@ package com.goodforgoodbusiness.engine.route;
 
 import static java.util.stream.Collectors.toSet;
 
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
 import com.goodforgoodbusiness.webapp.error.BadRequestException;
@@ -35,22 +34,21 @@ public class MatchSearchRoute implements Route {
 	public Object handle(Request req, Response res) throws Exception {
 		res.type(ContentType.json.getContentTypeString());
 		
-		var triple = JSON.decode(req.queryParams("pattern"), Triple.class);
-		if (triple != null) {
-			log.info("Matches called for " + triple);
-			
-			if ((triple.getSubject() == Node.ANY) && (triple.getObject() == Node.ANY)) {
+		var tuple = JSON.decode(req.queryParams("pattern"), TriTuple.class);
+		if (tuple != null) {
+			log.info("Matches called for " + tuple);
+			if (!tuple.getSubject().isPresent() && !tuple.getObject().isPresent()) {
 				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
 			}
 			
 			// search for remote claims, store in local store
-			var newClaims = searcher.search(triple).collect(toSet());
+			var newClaims = searcher.search(tuple).collect(toSet());
 			if (log.isDebugEnabled()) log.debug("new = " + newClaims);
 			newClaims.forEach(store::save);
 			
 			// retrieve all claims from local store
 			// includes those just fetched and others we already knew.
-			var knownClaims = store.search(triple).collect(toSet());
+			var knownClaims = store.search(tuple).collect(toSet());
 			if (log.isDebugEnabled()) log.debug("known = " + knownClaims);
 			
 			// return known claims

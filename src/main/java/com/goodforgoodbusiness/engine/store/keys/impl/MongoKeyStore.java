@@ -2,11 +2,9 @@ package com.goodforgoodbusiness.engine.store.keys.impl;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
-import static com.mongodb.client.model.Indexes.ascending;
 import static java.util.stream.StreamSupport.stream;
 
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.bson.Document;
@@ -14,11 +12,13 @@ import org.bson.conversions.Bson;
 
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
-import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
+import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -26,6 +26,7 @@ import com.mongodb.client.MongoDatabase;
 
 @Singleton
 public class MongoKeyStore implements ShareKeyStore {
+	private static final String CL_KNOWN = "known";
 	private static final String CL_KEYS = "keys";
 	
 	private final MongoClient client;
@@ -37,54 +38,77 @@ public class MongoKeyStore implements ShareKeyStore {
 		this.connectionString = new ConnectionString(connectionUrl);
 		this.client =  MongoClients.create(connectionString);
 		this.database = client.getDatabase(connectionString.getDatabase());
-		
-		var keyCollection = database.getCollection(CL_KEYS);
-		
-		keyCollection.createIndex(ascending("sub"));
-		keyCollection.createIndex(ascending("pre"));
-		keyCollection.createIndex(ascending("obj"));
-
-//		keyCollection.createIndex(ascending("key"), new IndexOptions().unique(true)); // XXX doesn't work - keys too big for index
 	}
 	
 	@Override
-	public void saveKey(ShareKeySpec spec, EncodeableShareKey key) {
+	public void saveKey(TriTuple tuple, EncodeableShareKey shareKey) {
+		database
+			.getCollection(CL_KNOWN)
+			.insertOne(
+				new Document()
+					.append("pattern", Document.parse(JSON.encodeToString(tuple)))
+					.append("public", shareKey.getPublic().toString())
+			)
+		;
+		
 		database
 			.getCollection(CL_KEYS)
 			.insertOne(
-				Document
-					.parse(JSON.encodeToString(spec))
-					.append("key", Document.parse(JSON.encodeToString(key)))
+				Document.parse(JSON.encodeToString(shareKey))
 			)
 		;
 	}
-
+	
 	@Override
-	public Stream<EncodeableShareKey> findKeys(ShareKeySpec idx) {
+	public Stream<KPABEPublicKey> knownSharers(TriTuple pattern) {
 		var filters = new LinkedList<Bson>();
 		
-		if (idx.getSubjectX().isPresent()) {
-			filters.add(eq("sub", idx.getSubjectX().get()));
+		if (pattern.getSubject().isPresent()) {
+			filters.add(eq("pattern.sub", pattern.getSubject().get()));
 		}
 		
-		if (idx.getPredicate().isPresent()) {
-			filters.add(eq("pre", idx.getPredicate().get()));
+		if (pattern.getPredicate().isPresent()) {
+			filters.add(eq("pattern.pre", pattern.getPredicate().get()));
 		}
 		
-		if (idx.getObject().isPresent()) {
-			filters.add(eq("obj", idx.getObject().get()));
+		if (pattern.getObject().isPresent()) {
+			filters.add(eq("pattern.obj", pattern.getObject().get()));
 		}
 		
 		return 
 			stream(
-				database
-					.getCollection(CL_KEYS)
+				database.getCollection(CL_KNOWN)
 					.find(or(filters))
 					.spliterator(),
 				true
 			)
-			.map(doc -> JSON.decode( ((Document)doc.get("key")).toJson() , EncodeableShareKey.class))
-			.filter(Objects::nonNull)
+			.map(storedPublicKey -> 
+				new KPABEPublicKey(storedPublicKey.getString("public"))
+			)
 		;
 	}
+	
+	@Override
+	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey) {
+		return 
+			stream(
+				database.getCollection(CL_KEYS)
+					.find(eq("public", publicKey.toString()))
+					.spliterator(),
+				true
+			)
+			.map(storedShareKey -> 
+				JSON.decode(storedShareKey.toJson(), EncodeableShareKey.class))
+		;
+		
+	}
+
+	/**
+	 * DANGER DANGER, testing only.
+	 */
+	public void clearAll() {
+		database.getCollection(CL_KNOWN).deleteMany(new BasicDBObject());
+		database.getCollection(CL_KEYS).deleteMany(new BasicDBObject());
+	}
 }
+

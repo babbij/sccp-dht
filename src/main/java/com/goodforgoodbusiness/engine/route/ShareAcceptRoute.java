@@ -2,10 +2,10 @@ package com.goodforgoodbusiness.engine.route;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
-import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
+import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -23,30 +23,30 @@ public class ShareAcceptRoute implements Route {
 	public static class ShareAcceptRequest {
 		@Expose
 		@SerializedName("pattern")
-		private ShareKeySpec spec;
+		private TriTuple pattern;
 		
 		@Expose
 		@SerializedName("key")
 		private EncodeableShareKey key;
 	}
 	
-	private final PointerCrypter crypter;
+	private final ShareKeyStore store;
 	private final DHTAccessGovernor cache;
 	
 	@Inject
-	public ShareAcceptRoute(PointerCrypter pointerCrypto, DHTAccessGovernor cache) {
-		this.crypter = pointerCrypto;
+	public ShareAcceptRoute(ShareKeyStore store, DHTAccessGovernor cache) {
+		this.store = store;
 		this.cache = cache;
 	}
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {		
-		log.info("Processing claim post");
-		
 		var sar = JSON.decode(req.body(), ShareAcceptRequest.class);
 		if (sar != null && sar.key != null) {
-			crypter.saveShareKey(sar.spec, sar.key);
-			cache.invalidate(sar.spec); // as we may now be able to decrypt more triples
+			log.info("Processing share accept for " + sar.pattern);
+			
+			store.saveKey(sar.pattern, sar.key);
+			cache.invalidate(sar.pattern); // as we may now be able to decrypt more triples
 		}
 		
 		return "OK";

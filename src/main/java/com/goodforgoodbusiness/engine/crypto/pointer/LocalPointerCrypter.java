@@ -3,6 +3,7 @@ package com.goodforgoodbusiness.engine.crypto.pointer;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 
+import com.goodforgoodbusiness.engine.crypto.KeyManager;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
@@ -15,9 +16,9 @@ public class LocalPointerCrypter extends PointerCrypter {
 	private final KPABELocalInstance kpabe;
 	
 	@Inject
-	public LocalPointerCrypter(KPABELocalInstance kpabe, ShareKeyStore store) {
+	public LocalPointerCrypter(KeyManager keyManager, ShareKeyStore store) throws InvalidKeyException {
 		super(store);
-		this.kpabe = kpabe;
+		this.kpabe = KPABELocalInstance.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey());
 	}
 	
 	@Override

@@ -7,12 +7,13 @@ import static com.google.inject.Guice.createInjector;
 import static com.google.inject.multibindings.MapBinder.newMapBinder;
 import static org.apache.commons.configuration2.ConfigurationConverter.getProperties;
 
-import java.security.InvalidKeyException;
 import java.util.Properties;
 
 import org.apache.commons.configuration2.Configuration;
 
 import com.goodforgoodbusiness.engine.crypto.Identity;
+import com.goodforgoodbusiness.engine.crypto.KeyManager;
+import com.goodforgoodbusiness.engine.crypto.ShareKeyCreator;
 import com.goodforgoodbusiness.engine.crypto.pointer.LocalPointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.dht.DHT;
@@ -29,14 +30,10 @@ import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
-import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.shared.LogConfigurer;
 import com.goodforgoodbusiness.webapp.Resource;
 import com.goodforgoodbusiness.webapp.Webapp;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
 import spark.Route;
@@ -62,6 +59,8 @@ public class EngineModule extends AbstractModule {
 			bind(DHTPublisher.class);
 			bind(DHTSearcher.class);
 			bind(ClaimBuilder.class);
+			bind(ShareKeyCreator.class);
+			bind(KeyManager.class);
 			bind(PointerCrypter.class).to(LocalPointerCrypter.class);
 			
 			bind(DHT.class).to(RemoteDHT.class);
@@ -82,14 +81,6 @@ public class EngineModule extends AbstractModule {
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	@Provides @Singleton
-	protected KPABELocalInstance getKPABE(
-		@Named("kpabe.publicKey") String publicKey,
-		@Named("kpabe.secretKey") String privateKey) throws InvalidKeyException {
-		
-		return KPABELocalInstance.forKeys(publicKey, privateKey);
 	}
 	
 	public static void main(String[] args) throws Exception {

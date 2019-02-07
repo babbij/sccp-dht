@@ -1,15 +1,21 @@
 package com.goodforgoodbusiness.engine.route;
 
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
+import com.goodforgoodbusiness.engine.crypto.ShareKeyCreator;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
-import com.goodforgoodbusiness.engine.store.keys.spec.ShareRangeSpec;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
+import com.goodforgoodbusiness.webapp.error.BadRequestException;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.inject.Inject;
@@ -26,50 +32,73 @@ public class ShareRequestRoute implements Route {
 	public static class ShareResponse {
 		@Expose
 		@SerializedName("pattern")
-		private ShareKeySpec spec;
+		private TriTuple pattern;
 
 		@Expose
-		@SerializedName("range")
-		private ShareRangeSpec range;
+		@SerializedName("start")
+		private ZonedDateTime start;
+		
+		@Expose
+		@SerializedName("end")
+		private ZonedDateTime end;
 		
 		@Expose
 		@SerializedName("key")
 		private EncodeableShareKey key;
 		
-		public ShareResponse(ShareKeySpec spec, ShareRangeSpec range, EncodeableShareKey key) {
-			this.spec = spec;
-			this.range = range;
+		public ShareResponse(TriTuple pattern, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end, EncodeableShareKey key) {
 			this.key = key;
+			this.pattern = pattern;
+			this.start = start.orElse(null);
+			this.end = end.orElse(null);
 		}
 	}
 	
-	private final PointerCrypter crypter;
+	private final ShareKeyCreator shareKeyCreator;
 	
 	@Inject
-	public ShareRequestRoute(PointerCrypter pointerCrypter) {
-		this.crypter = pointerCrypter;
+	public ShareRequestRoute(ShareKeyCreator shareKeyCreator) {
+		this.shareKeyCreator = shareKeyCreator;
 	}
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
 		res.type(ContentType.json.getContentTypeString());
 		
-		log.info("Processing share request");
-		
-		var keySpec = new ShareKeySpec(
+		var pattern = new TriTuple(
 			Optional.ofNullable(req.queryParams("sub")),
 			Optional.ofNullable(req.queryParams("pre")),
 			Optional.ofNullable(req.queryParams("obj"))
 		);
 		
-		var rangeSpec = new ShareRangeSpec(
-			req.queryParams("start"), req.queryParams("end")
-		);
+		if (!pattern.getSubject().isPresent() && !pattern.getObject().isPresent()) {
+			throw new BadRequestException("Must specify at least subject and object");
+		}
 		
-		var shareKey = crypter.makeShareKey(keySpec, rangeSpec);
+		var start = getDateTime(req.queryParams("start"));
+		var end = getDateTime(req.queryParams("end"));
+		
+		log.info("Creating share key for request on " + pattern);
 		
 		return JSON.encode(
-			new ShareResponse(keySpec, rangeSpec, shareKey)
+			new ShareResponse(
+				pattern, 
+				start,
+				end, 
+				shareKeyCreator.newKey(pattern, start, end)
+			)
 		);
+	}
+	
+	private static Optional<ZonedDateTime> getDateTime(String input) throws BadRequestException {
+		try {
+			return Optional
+				.ofNullable(input)
+				.map(i -> LocalDateTime.parse(i, ISO_LOCAL_DATE_TIME).atZone(ZoneId.of("UTC")))
+			;
+		}
+		catch (DateTimeParseException e) {
+			throw new BadRequestException("Bad datetime", e);
+		}
 	}
 }

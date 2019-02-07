@@ -8,17 +8,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.jena.graph.Triple;
-
-import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MemClaimStore implements ClaimStore {
 	private final Set<String> storedIds = new HashSet<>();
-	private final Map<String, Set<StoredClaim>> storedClaims = new HashMap<>();
+	private final Map<TriTuple, Set<StoredClaim>> storedClaims = new HashMap<>();
 	
 	@Override
 	public boolean contains(String claimId) {
@@ -31,10 +29,8 @@ public class MemClaimStore implements ClaimStore {
 			// store triples in local store.
 			// we can recalculate the patterns since the claim is fully unencrypted.
 			
-			claim
-				.getTriples()
-				.map(Pattern::forPublish)
-				.flatMap(Set::stream)
+			claim.getTriples()
+				.flatMap(triple -> TriTuple.from(triple).matchingCombinations())
 				.forEach(pattern -> { 
 					synchronized (storedClaims) {
 						if (storedClaims.containsKey(pattern)) {
@@ -54,10 +50,10 @@ public class MemClaimStore implements ClaimStore {
 	}
 
 	@Override
-	public Stream<StoredClaim> search(Triple triple) {
+	public Stream<StoredClaim> search(TriTuple tt) {
 		synchronized (storedClaims) {
 			return storedClaims
-				.getOrDefault(Pattern.forSearch(triple), emptySet())
+				.getOrDefault(tt, emptySet())
 				.stream()
 			;
 		}

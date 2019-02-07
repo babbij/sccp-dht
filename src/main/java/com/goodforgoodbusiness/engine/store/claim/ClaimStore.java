@@ -2,9 +2,8 @@ package com.goodforgoodbusiness.engine.store.claim;
 
 import java.util.stream.Stream;
 
-import org.apache.jena.graph.Triple;
-
 import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.TriTuple;
 
 /**
  * The local claim store, where we store our claims and others received
@@ -22,7 +21,7 @@ public interface ClaimStore {
 	public void save(StoredClaim claim);
 
 	/**
-	 * Find claims for triples 
+	 * Find claims for a Tri Tuple 
 	 */
-	public Stream<StoredClaim> search(Triple triple);
+	public Stream<StoredClaim> search(TriTuple tt);
 }

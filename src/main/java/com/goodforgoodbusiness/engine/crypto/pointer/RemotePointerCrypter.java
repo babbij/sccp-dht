@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
+import com.goodforgoodbusiness.engine.crypto.KeyManager;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
@@ -25,14 +26,14 @@ import com.google.inject.name.Named;
 public class RemotePointerCrypter extends PointerCrypter {
 	private static final Logger log = Logger.getLogger(PointerCrypter.class);
 	
-	private final KPABELocalInstance localkpabe;
+	private final KeyManager keyManager;
 	private final String [] remotes;
 	private final AtomicInteger counter = new AtomicInteger(0);
 	
 	@Inject
-	public RemotePointerCrypter(KPABELocalInstance localkpabe, ShareKeyStore store, @Named("kpabe.remotes") String remotes) {
+	public RemotePointerCrypter(KeyManager keyManager, ShareKeyStore store, @Named("kpabe.remotes") String remotes) {
 		super(store);
-		this.localkpabe = localkpabe;
+		this.keyManager = keyManager;
 		this.remotes = Stream.of(remotes.trim().split(",")).map(String::trim).toArray(i -> new String[i]);
 	}
 	
@@ -41,28 +42,28 @@ public class RemotePointerCrypter extends PointerCrypter {
 	}
 	
 	@Override
-	protected String encrypt(String data, String attributes) throws KPABEException {
+	protected String encrypt(String data, String attributes) throws KPABEException, InvalidKeyException {
 		try {
 			var remote = (KPABERemote)Naming.lookup(chooseNextRemote());
-			var instance = remote.forKeys(localkpabe.getPublicKey(), localkpabe.getSecretKey());
+			var instance = remote.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey());
 			return instance.encrypt(data, attributes);
 		}
-		catch (RemoteException | MalformedURLException | NotBoundException | InvalidKeyException e) {
+		catch (RemoteException | MalformedURLException | NotBoundException e) {
 			log.error("Could not reach remote kpabe", e);
-			return localkpabe.encrypt(data, attributes);
+			return KPABELocalInstance.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey()).encrypt(data, attributes);
 		}
 	}
 
 	@Override
-	protected KeyPair shareKey(String pattern) throws KPABEException {
+	protected KeyPair shareKey(String pattern) throws KPABEException, InvalidKeyException {
 		try {
 			var remote = (KPABERemote)Naming.lookup(chooseNextRemote());
-			var instance = remote.forKeys(localkpabe.getPublicKey(), localkpabe.getSecretKey());
+			var instance = remote.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey());
 			return instance.shareKey(pattern);
 		}
-		catch (RemoteException | MalformedURLException | NotBoundException | InvalidKeyException e) {
+		catch (RemoteException | MalformedURLException | NotBoundException e) {
 			log.error("Could not reach remote kpabe", e);
-			return localkpabe.shareKey(pattern);
+			return KPABELocalInstance.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey()).shareKey(pattern);
 		}
 	}
 

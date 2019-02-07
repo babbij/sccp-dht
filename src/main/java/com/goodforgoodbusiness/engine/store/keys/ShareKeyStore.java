@@ -3,18 +3,22 @@ package com.goodforgoodbusiness.engine.store.keys;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.engine.store.keys.spec.ShareKeySpec;
+import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
+import com.goodforgoodbusiness.model.TriTuple;
 
-public interface ShareKeyStore {	
-	public void saveKey(ShareKeySpec index, EncodeableShareKey key);
+public interface ShareKeyStore {
+	/**
+	 * Find any public key identities who shared something with us
+	 */
+	public Stream<KPABEPublicKey> knownSharers(TriTuple tuple);
 	
 	/**
-	 * Find keys for a Triple search pattern.
-	 * 
-	 * The algorithm for this is to find any key that matches at least one of
-	 * the concrete parts of the triple, as broader keys may grant access to
-	 * more specific patterns, but also narrow keys may give partial access to
-	 * narrower searches.  
+	 * Retrieve all keys shared with us by a particular MPK (public key).
 	 */
-	public Stream<EncodeableShareKey> findKeys(ShareKeySpec spec);
+	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey);
+
+	/**
+	 * Save a key for future retrieval via the find... methods
+	 */
+	public void saveKey(TriTuple tuple, EncodeableShareKey key);
 }

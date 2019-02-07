@@ -1,23 +1,21 @@
 package com.goodforgoodbusiness.engine.dht;
 
-import static com.google.common.collect.Streams.concat;
-import static java.lang.System.currentTimeMillis;
-import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.of;
-
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.Pattern;
+import com.goodforgoodbusiness.engine.AttributeMaker;
+import com.goodforgoodbusiness.engine.PatternMaker;
 import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.engine.crypto.KeyManager;
 import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.model.Pointer;
 import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -36,11 +34,13 @@ public class DHTPublisher {
 		}
 	}
 	
+	private final KeyManager keyManager;
 	private final PointerCrypter pointerCrypter;
 	private final DHT dht;
 	
 	@Inject
-	public DHTPublisher(PointerCrypter pointerCrypter, DHT dht) {
+	public DHTPublisher(KeyManager keyManager, PointerCrypter pointerCrypter, DHT dht) {
+		this.keyManager = keyManager;
 		this.pointerCrypter = pointerCrypter;
 		this.dht = dht;
 	}
@@ -56,16 +56,14 @@ public class DHTPublisher {
 		// generate combinations for pointers
 		var patterns = claim
 			.getTriples()
-			.map(Pattern::forPublish)
-			.flatMap(Set::stream)
-			.collect(toSet())
+			.flatMap(t -> PatternMaker.forPublish(keyManager, TriTuple.from(t)))
 		;
 		
-		// create a pointer for each pattern
 		// the pointer needs to be encrypted with _all_ the possible patterns + other attributes
-		var attributes = buildAttributes(patterns);
+		var attributes = AttributeMaker.forPublish(claim.getTriples().map(t -> TriTuple.from(t)));
+		
+		// create + publish a pointer for each generated pattern
 		patterns
-			.parallelStream()
 			.forEach(pattern -> {
 				try {
 					var pointer = new Pointer(
@@ -83,7 +81,7 @@ public class DHTPublisher {
 		;
 	}
 	
-	private void publishPointer(String pattern, Pointer pointer, Set<String> attributes) throws EncryptionException {
+	private void publishPointer(String pattern, Pointer pointer, String attributes) throws EncryptionException {
 		log.debug("Publishing pattern: " + pattern);
 		
 		try {
@@ -95,22 +93,8 @@ public class DHTPublisher {
 				)
 			);
 		}
-		catch (KPABEException e) {
+		catch (KPABEException | InvalidKeyException e) {
 			throw new EncryptionException("KPABE failure", e);
 		}
-	}
-	
-	/**
-	 * Attributes to use for encryption are patterns + timestamp.
-	 * This means keys can be issued with a pattern + a timestamp range to restrict access to a particular temporal window.
-	 */
-	private static Set<String> buildAttributes(Set<String> patterns) {
-		return
-			concat(
-				patterns.stream(),
-				of("time = " + Long.toString(currentTimeMillis() / 1000L), "test") // XXX remove test later!
-			)
-			.collect(toSet())
-		;
 	}
 }

@@ -4,17 +4,15 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Indexes.ascending;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.jena.graph.Triple;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
-import com.goodforgoodbusiness.engine.Pattern;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
 import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -23,6 +21,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.ReplaceOptions;
 
@@ -63,18 +62,16 @@ public class MongoClaimStore implements ClaimStore {
 				new ReplaceOptions().upsert(true)
 			);
 		
-		// store patterns as pointers, similar to DHT
-		// we can recalculate the patterns since the claim is fully unencrypted.
+		// store patterns with all combinations, similar to DHT
 		claim
 			.getTriples()
-			.map(Pattern::forPublish)
-			.flatMap(Set::stream)
-			.forEach(pattern -> { 
+			.flatMap(triple -> TriTuple.from(triple).matchingCombinations())
+			.forEach(tuple -> { 
 				database
 					.getCollection(CL_INDEX)
-					.insertOne(
+					.insertOne(	
 						new Document()
-							.append("pattern", pattern)
+							.append("tuple", Document.parse(JSON.encodeToString(tuple)))
 							.append("claim", claim.getId())
 					);
 			});
@@ -82,13 +79,18 @@ public class MongoClaimStore implements ClaimStore {
 	}
 
 	@Override
-	public Stream<StoredClaim> search(Triple triple) {
+	public Stream<StoredClaim> search(TriTuple tt) {
 		// find any pointers for the pattern
 		return 
 			StreamSupport.stream(
 				database
 					.getCollection(CL_INDEX)
-					.find(eq("pattern", Pattern.forSearch(triple)))
+					.find(Filters.and(
+						// search for tuple with correct signature
+						eq("tuple.sub", tt.getSubject().orElse(null)),
+						eq("tuple.pre", tt.getPredicate().orElse(null)),
+						eq("tuple.obj", tt.getObject().orElse(null))
+					))
 					.spliterator(),
 				true
 			)
