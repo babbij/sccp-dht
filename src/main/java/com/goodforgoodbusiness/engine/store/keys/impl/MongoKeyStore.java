@@ -27,7 +27,7 @@ import com.mongodb.client.MongoDatabase;
 @Singleton
 public class MongoKeyStore implements ShareKeyStore {
 	private static final String CL_KNOWN = "known";
-	private static final String CL_KEYS = "keys";
+	private static final String CL_SHARE = "share";
 	
 	private final MongoClient client;
 	private final ConnectionString connectionString;
@@ -41,26 +41,7 @@ public class MongoKeyStore implements ShareKeyStore {
 	}
 	
 	@Override
-	public void saveKey(TriTuple tuple, EncodeableShareKey shareKey) {
-		database
-			.getCollection(CL_KNOWN)
-			.insertOne(
-				new Document()
-					.append("pattern", Document.parse(JSON.encodeToString(tuple)))
-					.append("public", shareKey.getPublic().toString())
-			)
-		;
-		
-		database
-			.getCollection(CL_KEYS)
-			.insertOne(
-				Document.parse(JSON.encodeToString(shareKey))
-			)
-		;
-	}
-	
-	@Override
-	public Stream<KPABEPublicKey> knownSharers(TriTuple pattern) {
+	public Stream<KPABEPublicKey> knownInfoCreators(TriTuple pattern) {
 		var filters = new LinkedList<Bson>();
 		
 		if (pattern.getSubject().isPresent()) {
@@ -89,10 +70,10 @@ public class MongoKeyStore implements ShareKeyStore {
 	}
 	
 	@Override
-	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey) {
+	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey, TriTuple tuple) {
 		return 
 			stream(
-				database.getCollection(CL_KEYS)
+				database.getCollection(CL_SHARE)
 					.find(eq("public", publicKey.toString()))
 					.spliterator(),
 				true
@@ -102,13 +83,32 @@ public class MongoKeyStore implements ShareKeyStore {
 		;
 		
 	}
+	
+	@Override
+	public void saveKey(TriTuple tuple, EncodeableShareKey shareKey) {
+		database
+			.getCollection(CL_KNOWN)
+			.insertOne(
+				new Document()
+					.append("pattern", Document.parse(JSON.encodeToString(tuple)))
+					.append("public", shareKey.getPublic().toString())
+			)
+		;
+		
+		database
+			.getCollection(CL_SHARE)
+			.insertOne(
+				Document.parse(JSON.encodeToString(shareKey))
+			)
+		;
+	}
 
 	/**
 	 * DANGER DANGER, testing only.
 	 */
 	public void clearAll() {
 		database.getCollection(CL_KNOWN).deleteMany(new BasicDBObject());
-		database.getCollection(CL_KEYS).deleteMany(new BasicDBObject());
+		database.getCollection(CL_SHARE).deleteMany(new BasicDBObject());
 	}
 }
 

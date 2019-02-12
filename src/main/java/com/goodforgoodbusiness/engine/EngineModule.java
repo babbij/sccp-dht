@@ -10,6 +10,7 @@ import static org.apache.commons.configuration2.ConfigurationConverter.getProper
 import java.util.Properties;
 
 import org.apache.commons.configuration2.Configuration;
+import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.crypto.KeyManager;
@@ -27,6 +28,8 @@ import com.goodforgoodbusiness.engine.route.PingRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
 import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
+import com.goodforgoodbusiness.engine.store.claim.impl.CachingClaimStore;
+import com.goodforgoodbusiness.engine.store.claim.impl.CachingClaimStore.Underlying;
 import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
@@ -39,6 +42,8 @@ import com.google.inject.name.Names;
 import spark.Route;
 
 public class EngineModule extends AbstractModule {
+	private static final Logger log = Logger.getLogger(EngineModule.class);
+	
 	private final Configuration config;
 	
 	public EngineModule(Configuration config) {
@@ -65,7 +70,15 @@ public class EngineModule extends AbstractModule {
 			
 			bind(DHT.class).to(RemoteDHT.class);
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
-			bind(ClaimStore.class).to(MongoClaimStore.class);
+			
+			if (config.getBoolean("claimstore.cache.enabled", false)) {
+				bind(ClaimStore.class).to(CachingClaimStore.class);
+				bind(ClaimStore.class).annotatedWith(Underlying.class).to(MongoClaimStore.class);
+			}
+			else {
+				log.warn("Claim cache is DISABLED");
+				bind(ClaimStore.class).to(MongoClaimStore.class);
+			}
 			
 			bind(Webapp.class);
 			

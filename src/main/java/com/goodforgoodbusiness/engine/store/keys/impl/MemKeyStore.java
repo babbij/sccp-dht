@@ -22,16 +22,7 @@ public class MemKeyStore implements ShareKeyStore {
 	private Map<KPABEPublicKey, Set<String>> shareKeys = new HashMap<>();
 	
 	@Override
-	public void saveKey(TriTuple tuple, EncodeableShareKey shareKey) {
-		sharers.computeIfAbsent(tuple, key -> new HashSet<>());
-		sharers.get(tuple).add(shareKey.getPublic().toString());
-		
-		shareKeys.computeIfAbsent(shareKey.getPublic(), key -> new HashSet<>());
-		shareKeys.get(shareKey.getPublic()).add(JSON.encodeToString(shareKey));
-	}
-	
-	@Override
-	public Stream<KPABEPublicKey> knownSharers(TriTuple pattern) {
+	public Stream<KPABEPublicKey> knownInfoCreators(TriTuple pattern) {
 		return pattern.matchingCombinations()
 			.flatMap(tuple -> sharers.getOrDefault(tuple, emptySet()).stream())
 			.map(storedKey -> new KPABEPublicKey(storedKey))
@@ -41,11 +32,20 @@ public class MemKeyStore implements ShareKeyStore {
 	}
 	
 	@Override
-	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey) {
+	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey, TriTuple tuple) {
 		var result = shareKeys.getOrDefault(publicKey, emptySet());
 		return result.stream()
 			.map(storedShareKey -> 
 				JSON.decode(storedShareKey, EncodeableShareKey.class))
 		;
+	}
+	
+	@Override
+	public void saveKey(TriTuple tuple, EncodeableShareKey shareKey) {
+		sharers.computeIfAbsent(tuple, key -> new HashSet<>());
+		sharers.get(tuple).add(shareKey.getPublic().toString());
+		
+		shareKeys.computeIfAbsent(shareKey.getPublic(), key -> new HashSet<>());
+		shareKeys.get(shareKey.getPublic()).add(JSON.encodeToString(shareKey));
 	}
 }

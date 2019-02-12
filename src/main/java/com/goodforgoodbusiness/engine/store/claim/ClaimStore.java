@@ -1,5 +1,6 @@
 package com.goodforgoodbusiness.engine.store.claim;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.model.StoredClaim;
@@ -14,6 +15,11 @@ public interface ClaimStore {
 	 * Test if the store contains a claim ID already
 	 */
 	public boolean contains(String claimId);
+	
+	/**
+	 * Get claim by ID
+	 */
+	public Optional<StoredClaim> getClaim(String claimId);
 	
 	/**
 	 * Store a claim we've found locally 

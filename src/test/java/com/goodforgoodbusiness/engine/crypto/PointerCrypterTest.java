@@ -46,9 +46,9 @@ public class PointerCrypterTest {
 		
 		// generate fake pointer
 		var pointer = new Pointer("abc123", claimKey.toEncodedString(), 1234l);
-		var data = crypterA.encrypt(pointer, AttributeMaker.forPublish(Stream.of(tt1, tt2)));
+		var ptr = crypterA.encrypt(pointer, AttributeMaker.forPublish(Stream.of(tt1, tt2)));
 		
-		System.out.println(data);
+		System.out.println(ptr);
 		
 		// create fake share key
 		var shareKey = new EncodeableShareKey(kpabeA.shareKey(AttributeMaker.forShare(tt1, Optional.empty(), Optional.empty())));
@@ -63,7 +63,7 @@ public class PointerCrypterTest {
 		var crypterB = new LocalPointerCrypter(keyManagerB, storeB);
 		
 		// see if B can decrypt, using A's identity (public key)
-		var recoveredPointer = crypterB.decrypt(keyManagerA.getPublicKey(), data);
+		var recoveredPointer = crypterB.decrypt(keyManagerA.getPublicKey(), tt1, ptr.getData());
 		System.out.println(recoveredPointer.get());
 	}
 }

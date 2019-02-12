@@ -11,7 +11,9 @@ import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
+import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.model.Pointer;
+import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 
@@ -41,17 +43,17 @@ public abstract class PointerCrypter {
 	/**
 	 * Higher level encrypt function
 	 */
-	public String encrypt(Pointer pointer, String attributes) throws KPABEException, InvalidKeyException {
-		return encrypt(JSON.encodeToString(pointer), attributes);
+	public EncryptedPointer encrypt(Pointer pointer, String attributes) throws KPABEException, InvalidKeyException {
+		return new EncryptedPointer(encrypt(JSON.encodeToString(pointer), attributes));
 	}
 
 	/**
 	 * Higher level decrypt function
 	 * Specify publicKey so we know which keys to try against the data
 	 */
-	public Optional<Pointer> decrypt(KPABEPublicKey publicKey, String data) throws KPABEException, InvalidKeyException {
+	public Optional<Pointer> decrypt(KPABEPublicKey publicKey, TriTuple pattern, String data) throws KPABEException, InvalidKeyException {
 		return
-			store.keysForDecrypt(publicKey) // XXX think about expiry?
+			store.keysForDecrypt(publicKey, pattern) // XXX think about expiry?
 				.parallel()
 				.map(EncodeableShareKey::toKeyPair)
 				.map(keyPair -> {

@@ -42,9 +42,8 @@ public class MatchSearchRoute implements Route {
 			}
 			
 			// search for remote claims, store in local store
-			var newClaims = searcher.search(tuple).collect(toSet());
+			var newClaims = searcher.search(tuple, true).collect(toSet());
 			if (log.isDebugEnabled()) log.debug("new = " + newClaims);
-			newClaims.forEach(store::save);
 			
 			// retrieve all claims from local store
 			// includes those just fetched and others we already knew.

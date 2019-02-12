@@ -71,9 +71,9 @@ public class ShareRequestRoute implements Route {
 			Optional.ofNullable(req.queryParams("obj"))
 		);
 		
-		if (!pattern.getSubject().isPresent() && !pattern.getObject().isPresent()) {
-			throw new BadRequestException("Must specify at least subject and object");
-		}
+//		if (!pattern.getSubject().isPresent() && !pattern.getObject().isPresent()) {
+//			throw new BadRequestException("Must specify at least subject and object");
+//		}
 		
 		var start = getDateTime(req.queryParams("start"));
 		var end = getDateTime(req.queryParams("end"));

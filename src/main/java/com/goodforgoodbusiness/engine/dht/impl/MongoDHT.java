@@ -11,9 +11,8 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
-import com.goodforgoodbusiness.engine.dht.DHTPointer;
-import com.goodforgoodbusiness.engine.dht.DHTPointerMeta;
 import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -27,9 +26,6 @@ import com.mongodb.client.model.IndexOptions;
 @Singleton
 public class MongoDHT implements DHT {
 	private static final Logger log = Logger.getLogger(MongoDHT.class);
-	
-	// Mongo doesn't need meta but we can use a single instance as a type check
-	public static final DHTPointerMeta META = new DHTPointerMeta();
 	
 	private static final String CL_INDEX = "index";
 	private static final String CL_CLAIM = "claim";
@@ -52,7 +48,7 @@ public class MongoDHT implements DHT {
 	}
 	
 	@Override
-	public Stream<DHTPointer> getPointers(String pattern) {
+	public Stream<EncryptedPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
 		return 
@@ -63,12 +59,12 @@ public class MongoDHT implements DHT {
 					.spliterator(),
 				true
 			)
-			.map(doc -> new DHTPointer(doc.get("data").toString(), META))
+			.map(doc -> new EncryptedPointer(doc.get("data").toString()))
 		;
 	}
 
 	@Override
-	public void putPointer(String pattern, String data) {
+	public void putPointer(String pattern, EncryptedPointer pointer) {
 		log.debug("Put pointer: " + pattern);
 		
 		database
@@ -76,28 +72,30 @@ public class MongoDHT implements DHT {
 			.insertOne(
 				new Document()
 					.append("pattern", pattern)
-					.append("data", data)
+					.append("data", pointer.getData())
 			);
 	}
 	
 	@Override
-	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
+	public Optional<EncryptedClaim> getClaim(String id, EncryptedPointer originalPointer) {
+		return getClaim(id);
+	}
+	
+	/**
+	 * Expose this too because the Mongo implementation does not need the original pointer to retrieve a claim.
+	 */
+	public Optional<EncryptedClaim> getClaim(String id) {
 		log.debug("Get claim: " + id);
 		
-		if (meta == META) {
-			return 
-				Optional.ofNullable(
-					database
-						.getCollection(CL_CLAIM)
-					 	.find(eq("inner_envelope.hashkey", id))
-					 	.first()
-				)
-				.map(doc -> JSON.decode(doc.toJson(), EncryptedClaim.class))
-			;
-		}
-		else {
-			return Optional.empty();
-		}
+		return 
+			Optional.ofNullable(
+				database
+					.getCollection(CL_CLAIM)
+				 	.find(eq("inner_envelope.hashkey", id))
+				 	.first()
+			)
+			.map(doc -> JSON.decode(doc.toJson(), EncryptedClaim.class))
+		;
 	}
 
 	@Override

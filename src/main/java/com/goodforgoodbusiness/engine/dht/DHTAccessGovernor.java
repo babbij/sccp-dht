@@ -32,14 +32,14 @@ public class DHTAccessGovernor {
 	
 	@Inject
 	public DHTAccessGovernor(@Named("dht.cache.enabled") boolean enabled, @Named("dht.cache.duration") String cacheDuration) {
-		this(enabled, Duration.parse(cacheDuration).getSeconds());
+		this(enabled, Duration.parse(cacheDuration));
 	}
 	
-	public DHTAccessGovernor(boolean enabled, long cacheDurationSeconds) {
+	public DHTAccessGovernor(boolean enabled, Duration cacheDuration) {
 		if (enabled) {
 			this.tracker = CacheBuilder
 				.newBuilder()
-				.expireAfterWrite(Duration.ofSeconds(cacheDurationSeconds))
+				.expireAfterWrite(cacheDuration)
 				.build()
 			;
 		}

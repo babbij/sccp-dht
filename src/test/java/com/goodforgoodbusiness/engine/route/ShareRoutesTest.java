@@ -3,6 +3,7 @@ package com.goodforgoodbusiness.engine.route;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import com.goodforgoodbusiness.engine.crypto.KeyManager;
@@ -24,7 +25,7 @@ public class ShareRoutesTest {
 		var keyStore = new MemKeyStore();
 		
 		var requestRoute = new ShareRequestRoute(scc);
-		var acceptRoute = new ShareAcceptRoute(keyStore, new DHTAccessGovernor(false, 0));
+		var acceptRoute = new ShareAcceptRoute(keyStore, new DHTAccessGovernor(false, Duration.ZERO));
 		
 		var req1 = mock(Request.class);
 		when(req1.queryParams("sub")).thenReturn("s");
@@ -45,13 +46,15 @@ public class ShareRoutesTest {
 		var output2 = acceptRoute.handle(req2, res2);
 		System.out.println(output2);
 		
+		var tt = new TriTuple(Optional.of("s"), Optional.of("p"), Optional.of("o"));
+		
 		// verify in the store
-		var searchKeys = keyStore.knownSharers(new TriTuple(Optional.of("s"), Optional.of("p"), Optional.of("o")));
+		var searchKeys = keyStore.knownInfoCreators(tt);
 		searchKeys.forEach(searchKey -> {
 			System.out.println(searchKey);
 		});
 		
-		var decryptKeys = keyStore.keysForDecrypt(kpabe.getPublicKey());
+		var decryptKeys = keyStore.keysForDecrypt(kpabe.getPublicKey(), tt);
 		decryptKeys.forEach(decryptKey -> {
 			System.out.println(decryptKey);
 		});

@@ -56,24 +56,32 @@ public final class AttributeMaker {
 		// add epoch as additional attribute & return
 		attributes += "|time = " + toTimeRepresentation(now());
 		
+		// add 'all' so we can share everything (usually bounded by a small time window!)
+		attributes += "|all";
+		
 		log.debug("Publish attributes = " + attributes);
 		return attributes;
 	}
 	
 	public static String forShare(TriTuple tuple, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end) {
-		return 
-			hash(tuple)
-			+ 
-			start
-				.map(AttributeMaker::toTimeRepresentation)
-				.map(epochsec -> " AND time >= " + epochsec)
-				.orElse("")
-			+
-			end
-				.map(AttributeMaker::toTimeRepresentation)
-				.map(epochsec -> " AND time < " + epochsec)
-				.orElse("")
-		;
+		var pattern = "";
+		
+		if (tuple.getSubject().isPresent() && tuple.getPredicate().isPresent() && tuple.getObject().isPresent()) {
+			pattern += hash(tuple);
+		}
+		else {
+			pattern += "all";
+		}
+		
+		if (start.isPresent()) {
+			pattern += start.map(AttributeMaker::toTimeRepresentation).map(epochsec -> " AND time >= " + epochsec).get();
+		}
+		
+		if (end.isPresent()) {
+			pattern += end.map(AttributeMaker::toTimeRepresentation).map(epochsec -> " AND time < " + epochsec).get();
+		}
+		
+		return pattern;
 	}
 	
 	private static long toTimeRepresentation(ZonedDateTime datetime) {

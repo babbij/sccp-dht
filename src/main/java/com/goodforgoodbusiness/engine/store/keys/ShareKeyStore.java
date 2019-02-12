@@ -10,12 +10,12 @@ public interface ShareKeyStore {
 	/**
 	 * Find any public key identities who shared something with us
 	 */
-	public Stream<KPABEPublicKey> knownSharers(TriTuple tuple);
+	public Stream<KPABEPublicKey> knownInfoCreators(TriTuple tuple);
 	
 	/**
 	 * Retrieve all keys shared with us by a particular MPK (public key).
 	 */
-	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey);
+	public Stream<EncodeableShareKey> keysForDecrypt(KPABEPublicKey publicKey, TriTuple tuple);
 
 	/**
 	 * Save a key for future retrieval via the find... methods

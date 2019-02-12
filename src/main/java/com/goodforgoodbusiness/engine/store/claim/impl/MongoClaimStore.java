@@ -102,13 +102,26 @@ public class MongoClaimStore implements ClaimStore {
 		;
 	}
 	
-	private Optional<StoredClaim> getClaim(String id) {
+	public Optional<StoredClaim> getClaim(String id) {
 		return 
 			Optional.ofNullable(
 				database
 					.getCollection(CL_CLAIM)
 				 	.find(eq("inner_envelope.hashkey", id))
 				 	.first()
+			)
+			.map(doc -> JSON.decode(doc.toJson(), StoredClaim.class))
+		;
+	}
+	
+	protected Stream<StoredClaim> allClaims() {
+		return 
+			StreamSupport.stream(
+				database
+					.getCollection(CL_CLAIM)
+				 	.find()
+				 	.spliterator(),
+				 true
 			)
 			.map(doc -> JSON.decode(doc.toJson(), StoredClaim.class))
 		;

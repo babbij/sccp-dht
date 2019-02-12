@@ -10,9 +10,8 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
-import com.goodforgoodbusiness.engine.dht.DHTPointer;
-import com.goodforgoodbusiness.engine.dht.DHTPointerMeta;
 import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Singleton;
 
@@ -20,35 +19,31 @@ import com.google.inject.Singleton;
 public class MemDHT implements DHT {
 	private static final Logger log = Logger.getLogger(MemDHT.class);
 	
-	// Mem doesn't need meta but we can use a single instance as a type check
-	protected static final DHTPointerMeta META = new DHTPointerMeta();
-	
 	// store as String to test JSON encode/decode abilities 
-	private Map<String, Set<String>> pointers = new HashMap<>();
+	private Map<String, Set<EncryptedPointer>> pointers = new HashMap<>();
 
 	@Override
-	public Stream<DHTPointer> getPointers(String pattern) {
+	public Stream<EncryptedPointer> getPointers(String pattern) {
 		log.debug("Get pointers: " + pattern);
 		
 		return Optional
 			.ofNullable(pointers.get(pattern))
-			.map(Set::stream)
 			.stream()
-			.flatMap(stream -> stream.map(data -> new DHTPointer(data, META)))
+			.flatMap(Set::stream)
 		;
 	}
 
 	@Override
-	public void putPointer(String pattern, String data) {
+	public void putPointer(String pattern, EncryptedPointer pointer) {
 		log.debug("Put pointer: " + pattern);
 		
 		var existing = pointers.get(pattern);
 		if (existing != null) {
-			existing.add(data);
+			existing.add(pointer);
 		}
 		else {
-			var newSet = new HashSet<String>();
-			newSet.add(data);
+			var newSet = new HashSet<EncryptedPointer>();
+			newSet.add(pointer);
 			pointers.put(pattern, newSet);
 		}
 	}
@@ -56,18 +51,13 @@ public class MemDHT implements DHT {
 	private Map<String, String> claims = new HashMap<>();
 	
 	@Override
-	public Optional<EncryptedClaim> getClaim(String id, DHTPointerMeta meta) {
+	public Optional<EncryptedClaim> getClaim(String id, EncryptedPointer originalPointer) {
 		log.debug("Get claim: " + id);
 		
-		if (meta == META) {
-			return Optional
-				.ofNullable(claims.get(id))
-				.map(json -> JSON.decode(json, EncryptedClaim.class))
-			;
-		}
-		else {
-			return Optional.empty();
-		}
+		return Optional
+			.ofNullable(claims.get(id))
+			.map(json -> JSON.decode(json, EncryptedClaim.class))
+		;
 	}
 
 	@Override

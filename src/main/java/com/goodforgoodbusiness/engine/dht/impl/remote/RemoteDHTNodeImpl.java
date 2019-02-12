@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.impl.MongoDHT;
+import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTNode {
@@ -28,7 +29,7 @@ public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTN
 		// defer to MongoDHT
 		return store
 			.getPointers(pattern)
-			.map(dhtp -> dhtp.getData())
+			.map(EncryptedPointer::getData)
 			.collect(toSet())
 		;
 	}
@@ -39,7 +40,7 @@ public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTN
 			
 		// defer to MongoDHT
 		return store
-			.getClaim(id, MongoDHT.META)
+			.getClaim(id) 
 			.map(JSON::encodeToString)
 			.orElse(null)
 		;
