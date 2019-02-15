@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
+import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.Rounds;
 import com.goodforgoodbusiness.shared.encode.CBOR;
@@ -25,7 +26,7 @@ public final class AttributeMaker {
 	
 	private static final String PREFIX = "a";
 	
-	private static String hash(TriTuple tt) {
+	private static String hash(KPABEPublicKey key, TriTuple tt) {
 		var cbor = CBOR.forObject(new Object [] { 
 			tt.getSubject().orElse(null),
 			tt.getPredicate().orElse(null),
@@ -43,13 +44,13 @@ public final class AttributeMaker {
 	 * 
 	 * Put a prefix on each attribute to avoid issues with OpenABE (which doesn't like attributes beginning with numbers).
 	 */
-	public static String forPublish(Stream<TriTuple> tuples) {
+	public static String forPublish(KPABEPublicKey key, Stream<TriTuple> tuples) {
 		var attributes = tuples
 			.parallel()
 			.flatMap(TriTuple::matchingCombinations)
 			// for DHT publish, tuple pattern must have either defined subject or defined object
 			.filter(tt -> tt.getSubject().isPresent() || tt.getObject().isPresent())
-			.map(AttributeMaker::hash)
+			.map(tt -> hash(key, tt))
 			.collect(joining("|"))
 		;
 		
@@ -63,11 +64,11 @@ public final class AttributeMaker {
 		return attributes;
 	}
 	
-	public static String forShare(TriTuple tuple, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end) {
+	public static String forShare(KPABEPublicKey key, TriTuple tuple, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end) {
 		var pattern = "";
 		
 		if (tuple.getSubject().isPresent() && tuple.getPredicate().isPresent() && tuple.getObject().isPresent()) {
-			pattern += hash(tuple);
+			pattern += hash(key, tuple);
 		}
 		else {
 			pattern += "all";

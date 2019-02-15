@@ -14,10 +14,12 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class ShareKeyCreator {
+	private final KeyManager keyManager;
 	private final KPABELocalInstance kpabe;
 
 	@Inject
 	public ShareKeyCreator(KeyManager keyManager) throws KPABEException, InvalidKeyException {
+		this.keyManager = keyManager;
 		this.kpabe = KPABELocalInstance.forKeys(keyManager.getPublicKey(), keyManager.getSecretKey());
 	}
 	
@@ -30,7 +32,7 @@ public class ShareKeyCreator {
 		
 		return new EncodeableShareKey(
 			kpabe.shareKey(
-				AttributeMaker.forShare(pattern, start, end)
+				AttributeMaker.forShare(keyManager.getPublicKey(), pattern, start, end)
 			)
 		);
 	}

@@ -60,7 +60,7 @@ public class DHTPublisher {
 		;
 		
 		// the pointer needs to be encrypted with _all_ the possible patterns + other attributes
-		var attributes = AttributeMaker.forPublish(claim.getTriples().map(t -> TriTuple.from(t)));
+		var attributes = AttributeMaker.forPublish(keyManager.getPublicKey(), claim.getTriples().map(t -> TriTuple.from(t)));
 		
 		// create + publish a pointer for each generated pattern
 		patterns
