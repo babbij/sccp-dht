@@ -10,11 +10,15 @@ import java.util.stream.Stream;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
+import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.TriTuple;
 
 public class AttributeMakerTest {
 	public static void main(String[] args) throws Exception {
+		var kpabe = KPABELocalInstance.newKeys();
+		
 		String attributes = AttributeMaker.forPublish(
+			kpabe.getPublicKey(),
 			Stream.of(
 				TriTuple.from(
 					new Triple(
@@ -37,6 +41,7 @@ public class AttributeMakerTest {
 		System.out.println(attributes);
 		
 		var share1 = AttributeMaker.forShare(
+			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(
 					createURI("https://twitter.com/ijmad8x"),
@@ -51,6 +56,7 @@ public class AttributeMakerTest {
 		System.out.println(share1);
 		
 		var share2 = AttributeMaker.forShare(
+			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(
 					createURI("https://twitter.com/ijmad8x"),
@@ -65,6 +71,7 @@ public class AttributeMakerTest {
 		System.out.println(share2);
 		
 		var share3 = AttributeMaker.forShare(
+			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(
 					createURI("https://twitter.com/ijmad8x"),

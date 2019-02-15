@@ -32,7 +32,7 @@ public class ShareKeyCreatorTest {
 		System.out.println(keyPair1);
 		
 		// get the attribute hash for the tuple
-		var attributes = AttributeMaker.forPublish(Stream.of(tt));
+		var attributes = AttributeMaker.forPublish(keyManager.getPublicKey(), Stream.of(tt));
 		
 		// directly encrypt some data with it
 		var ciphertext = kpabe.encrypt("testing testing", attributes);

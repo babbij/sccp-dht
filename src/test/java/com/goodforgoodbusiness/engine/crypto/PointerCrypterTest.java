@@ -46,12 +46,14 @@ public class PointerCrypterTest {
 		
 		// generate fake pointer
 		var pointer = new Pointer("abc123", claimKey.toEncodedString(), 1234l);
-		var ptr = crypterA.encrypt(pointer, AttributeMaker.forPublish(Stream.of(tt1, tt2)));
+		var ptr = crypterA.encrypt(pointer, AttributeMaker.forPublish(kpabeA.getPublicKey(), Stream.of(tt1, tt2)));
 		
 		System.out.println(ptr);
 		
 		// create fake share key
-		var shareKey = new EncodeableShareKey(kpabeA.shareKey(AttributeMaker.forShare(tt1, Optional.empty(), Optional.empty())));
+		var shareKey = new EncodeableShareKey(kpabeA.shareKey(
+			AttributeMaker.forShare(kpabeA.getPublicKey(), tt1, Optional.empty(), Optional.empty())
+		));
 		
 		// put it in a store created for B
 		var storeB = new MemKeyStore();

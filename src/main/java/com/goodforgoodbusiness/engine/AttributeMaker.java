@@ -67,7 +67,7 @@ public final class AttributeMaker {
 	public static String forShare(KPABEPublicKey key, TriTuple tuple, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end) {
 		var pattern = "";
 		
-		if (tuple.getSubject().isPresent() && tuple.getPredicate().isPresent() && tuple.getObject().isPresent()) {
+		if (tuple.getSubject().isPresent() || tuple.getPredicate().isPresent() || tuple.getObject().isPresent()) {
 			pattern += hash(key, tuple);
 		}
 		else {
