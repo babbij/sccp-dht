@@ -8,13 +8,13 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.AttributeMaker;
 import com.goodforgoodbusiness.engine.PatternMaker;
-import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.engine.crypto.ContainerCrypter;
 import com.goodforgoodbusiness.engine.crypto.KeyManager;
 import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.model.Pointer;
-import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.StoredContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -45,29 +45,29 @@ public class DHTPublisher {
 		this.dht = dht;
 	}
 	
-	public void publishClaim(StoredClaim claim) throws EncryptionException {
-		log.debug("Publishing claim: " + claim.getId());
+	public void publishContainer(StoredContainer container) throws EncryptionException {
+		log.debug("Publishing container: " + container.getId());
 		
-		var crypter = new ClaimCrypter(); // creates a new key
-		var encryptedClaim = crypter.encrypt(claim);
+		var crypter = new ContainerCrypter(); // creates a new key
+		var encryptedContainer = crypter.encrypt(container);
 		
-		dht.putClaim(encryptedClaim);
+		dht.putContainer(encryptedContainer);
 		
 		// generate combinations for pointers
-		var patterns = claim
+		var patterns = container
 			.getTriples()
 			.flatMap(t -> PatternMaker.forPublish(keyManager, TriTuple.from(t)))
 		;
 		
 		// the pointer needs to be encrypted with _all_ the possible patterns + other attributes
-		var attributes = AttributeMaker.forPublish(keyManager.getPublicKey(), claim.getTriples().map(t -> TriTuple.from(t)));
+		var attributes = AttributeMaker.forPublish(keyManager.getPublicKey(), container.getTriples().map(t -> TriTuple.from(t)));
 		
 		// create + publish a pointer for each generated pattern
 		patterns
 			.forEach(pattern -> {
 				try {
 					var pointer = new Pointer(
-						claim.getId(),
+						container.getId(),
 						crypter.getSecretKey().toEncodedString(),
 						RANDOM.nextLong()
 					);

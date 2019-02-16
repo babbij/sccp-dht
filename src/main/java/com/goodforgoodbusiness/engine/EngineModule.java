@@ -22,15 +22,15 @@ import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
 import com.goodforgoodbusiness.engine.dht.DHTPublisher;
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
 import com.goodforgoodbusiness.engine.dht.impl.remote.RemoteDHT;
-import com.goodforgoodbusiness.engine.route.ClaimSubmitRoute;
+import com.goodforgoodbusiness.engine.route.ContainerSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.PingRoute;
 import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
-import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
-import com.goodforgoodbusiness.engine.store.claim.impl.CachingClaimStore;
-import com.goodforgoodbusiness.engine.store.claim.impl.CachingClaimStore.Underlying;
-import com.goodforgoodbusiness.engine.store.claim.impl.MongoClaimStore;
+import com.goodforgoodbusiness.engine.store.container.ContainerStore;
+import com.goodforgoodbusiness.engine.store.container.impl.CachingContainerStore;
+import com.goodforgoodbusiness.engine.store.container.impl.MongoContainerStore;
+import com.goodforgoodbusiness.engine.store.container.impl.CachingContainerStore.Underlying;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
 import com.goodforgoodbusiness.shared.LogConfigurer;
@@ -63,7 +63,7 @@ public class EngineModule extends AbstractModule {
 			bind(DHTAccessGovernor.class);
 			bind(DHTPublisher.class);
 			bind(DHTSearcher.class);
-			bind(ClaimBuilder.class);
+			bind(ContainerBuilder.class);
 			bind(ShareKeyCreator.class);
 			bind(KeyManager.class);
 			bind(PointerCrypter.class).to(LocalPointerCrypter.class);
@@ -72,12 +72,12 @@ public class EngineModule extends AbstractModule {
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
 			if (config.getBoolean("claimstore.cache.enabled", false)) {
-				bind(ClaimStore.class).to(CachingClaimStore.class);
-				bind(ClaimStore.class).annotatedWith(Underlying.class).to(MongoClaimStore.class);
+				bind(ContainerStore.class).to(CachingContainerStore.class);
+				bind(ContainerStore.class).annotatedWith(Underlying.class).to(MongoContainerStore.class);
 			}
 			else {
-				log.warn("Claim cache is DISABLED");
-				bind(ClaimStore.class).to(MongoClaimStore.class);
+				log.warn("Container cache is DISABLED");
+				bind(ContainerStore.class).to(MongoContainerStore.class);
 			}
 			
 			bind(Webapp.class);
@@ -87,7 +87,7 @@ public class EngineModule extends AbstractModule {
 			routes.addBinding(get("/ping")).to(PingRoute.class);
 			
 			routes.addBinding(get("/matches")).to(MatchSearchRoute.class);
-			routes.addBinding(post("/claims")).to(ClaimSubmitRoute.class);
+			routes.addBinding(post("/containers")).to(ContainerSubmitRoute.class);
 			routes.addBinding(get("/share")).to(ShareRequestRoute.class);
 			routes.addBinding(post("/share")).to(ShareAcceptRoute.class);
 		}

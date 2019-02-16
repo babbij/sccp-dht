@@ -1,22 +1,23 @@
-package com.goodforgoodbusiness.engine.store.claim.impl;
+package com.goodforgoodbusiness.engine.store.container.impl;
 
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
-import com.goodforgoodbusiness.engine.ClaimBuilder;
+import com.goodforgoodbusiness.engine.ContainerBuilder;
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
-import com.goodforgoodbusiness.model.SubmittableClaim;
+import com.goodforgoodbusiness.engine.store.container.impl.MongoContainerStore;
+import com.goodforgoodbusiness.model.SubmittableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 
-public class MemClaimStoreTest {
+public class MongoContainerStoreTest {
 	public static void main(String[] args) throws Exception {
-		var store = new MemClaimStore();
+		var store = new MongoContainerStore("mongodb://localhost:27017/containerstoretest");
 		
 		var kp = AsymmetricEncryption.createKeyPair();
 		var id = new Identity("foo", kp.getPrivate().toEncodedString(), kp.getPublic().toEncodedString());
-		var claimBuilder = new ClaimBuilder(id);
+		var containerBuilder = new ContainerBuilder(id);
 		
 		var trup = new Triple(
 			NodeFactory.createURI("https://twitter.com/ijmad"),
@@ -24,11 +25,11 @@ public class MemClaimStoreTest {
 			NodeFactoryExtra.createLiteralNode("Ian Maddison", null, "http://www.w3.org/2001/XMLSchema#string")
 		);
 		
-		var submittedClaim = new SubmittableClaim();
-		submittedClaim.added(trup);
+		var submittedContainer = new SubmittableContainer();
+		submittedContainer.added(trup);
 		
-		var storedClaim = claimBuilder.buildFrom(submittedClaim);
-		store.save(storedClaim);
+		var storedContainer = containerBuilder.buildFrom(submittedContainer);
+		store.save(storedContainer);
 		
 		store.search(TriTuple.from(trup)).forEach(c -> {
 			System.out.println(c);

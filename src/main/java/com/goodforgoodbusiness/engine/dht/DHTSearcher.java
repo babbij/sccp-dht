@@ -10,16 +10,16 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.PatternMaker;
-import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.engine.crypto.ContainerCrypter;
 import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
 import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
-import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
+import com.goodforgoodbusiness.engine.store.container.ContainerStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.model.Pointer;
-import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.model.StoredContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,26 +29,26 @@ public class DHTSearcher {
 	private static final Logger log = Logger.getLogger(DHTSearcher.class);
 	
 	private final ShareKeyStore keyStore;
-	private final ClaimStore claimStore;
+	private final ContainerStore containerStore;
 	private final DHT dht;
 	private final DHTAccessGovernor governor;
 	private final PointerCrypter crypter;
 	
 	@Inject
-	public DHTSearcher(ShareKeyStore keyStore, ClaimStore claimStore, DHT dht, DHTAccessGovernor governor, PointerCrypter crypter) {
+	public DHTSearcher(ShareKeyStore keyStore, ContainerStore containerStore, DHT dht, DHTAccessGovernor governor, PointerCrypter crypter) {
 		this.keyStore = keyStore;
-		this.claimStore = claimStore;
+		this.containerStore = containerStore;
 		this.dht = dht;
 		this.governor = governor;
 		this.crypter = crypter;
 	}
 	
-	public Stream<StoredClaim> search(TriTuple tuple, boolean save) {
+	public Stream<StoredContainer> search(TriTuple tuple, boolean save) {
 		if (governor.allow(tuple)) {
 			log.info("DHT searching for " + tuple);
 			
 			// look for anyone who's ever shared a key matching these triples with us
-			// (possibly more than one) and fetch claims for each of them from the DHT
+			// (possibly more than one) and fetch containers for each of them from the DHT
 			return keyStore
 				.knownInfoCreators(tuple)
 				.distinct()
@@ -61,10 +61,10 @@ public class DHTSearcher {
 		}
 	}
 	
-	/** Fetch claims from a specific information creator */
-	private Stream<StoredClaim> search(KPABEPublicKey infoCreator, TriTuple tuple, boolean save) {
+	/** Fetch containers from a specific information creator */
+	private Stream<StoredContainer> search(KPABEPublicKey infoCreator, TriTuple tuple, boolean save) {
 		var patternHash = PatternMaker.forSearch(infoCreator, tuple);
-		var claims = new HashSet<StoredClaim>();
+		var containers = new HashSet<StoredContainer>();
 		
 		log.debug("DHT found infoCreator " + infoCreator.toString().substring(0, 10) + "...");
 		log.debug("DHT searching for pointer patterns " + patternHash.substring(0,  10) + "...");
@@ -74,21 +74,21 @@ public class DHTSearcher {
 			.distinct()
 			.forEach(encryptedPointer -> {
 				decryptPointer(infoCreator, tuple, encryptedPointer.getData())
-					.filter(pointer -> !claimStore.contains(pointer.getClaimId()))
-					.flatMap(pointer -> fetchClaim(pointer, encryptedPointer))
-					.ifPresent(claim -> {
+					.filter(pointer -> !containerStore.contains(pointer.getContainerId()))
+					.flatMap(pointer -> fetchContainer(pointer, encryptedPointer))
+					.ifPresent(container -> {
 						if (save) {
-							claimStore.save(claim);
+							containerStore.save(container);
 						}
 						
-						claims.add(claim);
+						containers.add(container);
 					});
 				;
 			})
 		;
 		
-		log.debug("Results found = " + claims.size());
-		return claims.parallelStream();
+		log.debug("Results found = " + containers.size());
+		return containers.parallelStream();
 	}
 	
 	/** Decrypt a pointer - note that returning empty is not error, just means we can't (which is often normal). */
@@ -111,19 +111,19 @@ public class DHTSearcher {
 		}
 	}
 	
-	private Optional<StoredClaim> fetchClaim(Pointer pointer, EncryptedPointer encryptedPointer) {
-		log.debug("Fetching claim: " + pointer.getClaimId());
-		var encryptedClaimHolder = dht.getClaim(pointer.getClaimId(), encryptedPointer);
+	private Optional<StoredContainer> fetchContainer(Pointer pointer, EncryptedPointer encryptedPointer) {
+		log.debug("Fetching container: " + pointer.getContainerId());
+		var encryptedContainerHolder = dht.getContainer(pointer.getContainerId(), encryptedPointer);
 		
-		if (encryptedClaimHolder.isPresent()) {
-			var encryptedClaim = encryptedClaimHolder.get();
-			log.debug("Decrypting claim: " + encryptedClaim.getId());
+		if (encryptedContainerHolder.isPresent()) {
+			var encryptedContainer = encryptedContainerHolder.get();
+			log.debug("Decrypting container: " + encryptedContainer.getId());
 			
 			try {
-				return Optional.of(new ClaimCrypter(pointer.getClaimKey()).decrypt(encryptedClaim));
+				return Optional.of(new ContainerCrypter(pointer.getContainerKey()).decrypt(encryptedContainer));
 			}
 			catch (EncryptionException e) {
-				log.error("Error decrypting claim", e);
+				log.error("Error decrypting container", e);
 				return Optional.empty();
 			}
 		}

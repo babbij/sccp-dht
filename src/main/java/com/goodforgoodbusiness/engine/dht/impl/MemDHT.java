@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
-import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedContainer;
 import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Singleton;
@@ -48,22 +48,22 @@ public class MemDHT implements DHT {
 		}
 	}
 
-	private Map<String, String> claims = new HashMap<>();
+	private Map<String, String> containers = new HashMap<>();
 	
 	@Override
-	public Optional<EncryptedClaim> getClaim(String id, EncryptedPointer originalPointer) {
-		log.debug("Get claim: " + id);
+	public Optional<EncryptedContainer> getContainer(String id, EncryptedPointer originalPointer) {
+		log.debug("Get container: " + id);
 		
 		return Optional
-			.ofNullable(claims.get(id))
-			.map(json -> JSON.decode(json, EncryptedClaim.class))
+			.ofNullable(containers.get(id))
+			.map(json -> JSON.decode(json, EncryptedContainer.class))
 		;
 	}
 
 	@Override
-	public void putClaim(EncryptedClaim claim) {
-		log.debug("Put claim: " + claim.getId());
-		claims.put(claim.getId(), JSON.encodeToString(claim));
+	public void putContainer(EncryptedContainer container) {
+		log.debug("Put container: " + container.getId());
+		containers.put(container.getId(), JSON.encodeToString(container));
 	}
 
 }

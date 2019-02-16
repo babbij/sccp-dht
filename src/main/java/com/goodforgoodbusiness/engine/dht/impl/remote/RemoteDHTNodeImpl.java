@@ -35,12 +35,12 @@ public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTN
 	}
 
 	@Override
-	public String getClaim(String id) throws RemoteException {
-		log.debug("Remote request for claim " + id);
+	public String getContainer(String id) throws RemoteException {
+		log.debug("Remote request for container " + id);
 			
 		// defer to MongoDHT
 		return store
-			.getClaim(id) 
+			.getContainer(id) 
 			.map(JSON::encodeToString)
 			.orElse(null)
 		;

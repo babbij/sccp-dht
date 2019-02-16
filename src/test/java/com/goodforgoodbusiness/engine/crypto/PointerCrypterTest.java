@@ -18,7 +18,7 @@ import com.goodforgoodbusiness.model.TriTuple;
 
 public class PointerCrypterTest {
 	public static void main(String[] args) throws Exception {
-		// imagine A is sharing a claim with the following triples
+		// imagine A is sharing a container with the following triples
 		var tt1 = TriTuple.from(
 			new Triple(
 				createURI("https://twitter.com/ijmad8x"),
@@ -42,10 +42,10 @@ public class PointerCrypterTest {
 		// pointer crypter for encrypt
 		var crypterA = new LocalPointerCrypter(keyManagerA, new MemKeyStore());
 		
-		var claimKey = new ClaimCrypter().getSecretKey();
+		var containerKey = new ContainerCrypter().getSecretKey();
 		
 		// generate fake pointer
-		var pointer = new Pointer("abc123", claimKey.toEncodedString(), 1234l);
+		var pointer = new Pointer("abc123", containerKey.toEncodedString(), 1234l);
 		var ptr = crypterA.encrypt(pointer, AttributeMaker.forPublish(kpabeA.getPublicKey(), Stream.of(tt1, tt2)));
 		
 		System.out.println(ptr);

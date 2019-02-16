@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.store.claim.impl;
+package com.goodforgoodbusiness.engine.store.container.impl;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -14,8 +14,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
-import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.engine.store.container.ContainerStore;
+import com.goodforgoodbusiness.model.StoredContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -26,34 +26,34 @@ import com.google.inject.name.Named;
 
 
 /**
- * Caching wrapper for ClaimStore.
+ * Caching wrapper for ContainerStore.
  */
 @Singleton
-public class CachingClaimStore implements ClaimStore {
+public class CachingContainerStore implements ContainerStore {
 	@BindingAnnotation @Target({ FIELD, PARAMETER, METHOD }) @Retention(RUNTIME)
 	public @interface Underlying {}
 	
-	private final Cache<String, Optional<StoredClaim>> claimsById;
-	private final Cache<TriTuple, Set<StoredClaim>> claimsByPattern;
+	private final Cache<String, Optional<StoredContainer>> containersById;
+	private final Cache<TriTuple, Set<StoredContainer>> containersByPattern;
 	
-	private final ClaimStore underlying;
+	private final ContainerStore underlying;
 	
 	@Inject
-	public CachingClaimStore(@Underlying ClaimStore underlying, @Named("claimstore.cache.duration") String cacheDuration) {
+	public CachingContainerStore(@Underlying ContainerStore underlying, @Named("containerstore.cache.duration") String cacheDuration) {
 		this(underlying, Duration.parse(cacheDuration));
 	}
 	
-	public CachingClaimStore(ClaimStore underlying, Duration cacheDuration) {
+	public CachingContainerStore(ContainerStore underlying, Duration cacheDuration) {
 		this.underlying = underlying;
 		
-		this.claimsById = CacheBuilder
+		this.containersById = CacheBuilder
 			.newBuilder()
 			.expireAfterWrite(cacheDuration)
 			.maximumSize(1000)
 			.build()
 		;
 		
-		this.claimsByPattern = CacheBuilder
+		this.containersByPattern = CacheBuilder
 			.newBuilder()
 			.expireAfterWrite(cacheDuration)
 			.maximumSize(5000)
@@ -62,22 +62,22 @@ public class CachingClaimStore implements ClaimStore {
 	}
 
 	@Override
-	public void save(StoredClaim claim) {
-		underlying.save(claim);
+	public void save(StoredContainer container) {
+		underlying.save(container);
 		
-		claim.getTriples()
+		container.getTriples()
 			.flatMap(triple -> TriTuple.from(triple).matchingCombinations())
-			.forEach(pattern -> claimsByPattern.invalidate(pattern));
+			.forEach(pattern -> containersByPattern.invalidate(pattern));
 		;
 		
-		claimsById.put(claim.getId(), Optional.of(claim));
+		containersById.put(container.getId(), Optional.of(container));
 	}
 
 	@Override
-	public Stream<StoredClaim> search(TriTuple tt) {
+	public Stream<StoredContainer> search(TriTuple tt) {
 		try {
-			Set<StoredClaim> set = claimsByPattern.get(tt, () -> underlying.search(tt).collect(Collectors.toSet()));
-			set.forEach(claim -> claimsById.put(claim.getId(), Optional.of(claim)));
+			Set<StoredContainer> set = containersByPattern.get(tt, () -> underlying.search(tt).collect(Collectors.toSet()));
+			set.forEach(container -> containersById.put(container.getId(), Optional.of(container)));
 			return set.parallelStream();
 		}
 		catch (ExecutionException ee) {
@@ -86,9 +86,9 @@ public class CachingClaimStore implements ClaimStore {
 	}
 	
 	@Override
-	public Optional<StoredClaim> getClaim(String id) {
+	public Optional<StoredContainer> getContainer(String id) {
 		try {
-			return claimsById.get(id, () -> underlying.getClaim(id));
+			return containersById.get(id, () -> underlying.getContainer(id));
 		}
 		catch (ExecutionException ee) {
 			throw new RuntimeException(ee);
@@ -96,7 +96,7 @@ public class CachingClaimStore implements ClaimStore {
 	}
 	
 	@Override
-	public boolean contains(String claimId) {
-		return getClaim(claimId).isPresent();
+	public boolean contains(String containerId) {
+		return getContainer(containerId).isPresent();
 	}
 }

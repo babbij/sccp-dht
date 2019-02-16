@@ -4,26 +4,26 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
-import com.goodforgoodbusiness.engine.ClaimBuilder;
-import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
+import com.goodforgoodbusiness.engine.ContainerBuilder;
+import com.goodforgoodbusiness.engine.crypto.ContainerCrypter;
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
 import com.goodforgoodbusiness.model.Link;
 import com.goodforgoodbusiness.model.Link.RelType;
-import com.goodforgoodbusiness.model.SubmittableClaim;
+import com.goodforgoodbusiness.model.SubmittableContainer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 
-public class ClaimBuilderTest {
+public class ContainerBuilderTest {
 	public static void main(String[] args) throws Exception {
 		var kp = AsymmetricEncryption.createKeyPair();
 		var id = new Identity("foo", kp.getPrivate().toEncodedString(), kp.getPublic().toEncodedString());
 		
 		
-		var claimBuilder = new ClaimBuilder(id);
+		var containerBuilder = new ContainerBuilder(id);
 		
-		var submittedClaim = new SubmittableClaim();
+		var submittedContainer = new SubmittableContainer();
 		
-		submittedClaim.added(
+		submittedContainer.added(
 			new Triple(
 				NodeFactory.createURI("https://twitter.com/ijmad"),
 				NodeFactory.createURI("http://xmlns.com/foaf/0.1/name"),
@@ -31,27 +31,27 @@ public class ClaimBuilderTest {
 			)
 		);
 		
-		submittedClaim.linked(new Link(
+		submittedContainer.linked(new Link(
 			"b62accf26d5a1d8a7cb320e689ae2dd189a18cc3dca9457194e3d304e912c51d" +
 			"adf746293e4707ec23a049e2cdb5684b2dcff91f5883e576d6a81100bafa56e4",
 			RelType.CAUSED_BY
 		));
 		
-		var storedClaim = claimBuilder.buildFrom(submittedClaim);
+		var storedContainer = containerBuilder.buildFrom(submittedContainer);
 		
-		var storedJson = JSON.encodeToString(storedClaim);
+		var storedJson = JSON.encodeToString(storedContainer);
 		System.out.println(storedJson);
 		
-		var crypter = new ClaimCrypter();
+		var crypter = new ContainerCrypter();
 		
-		var encryptedClaim = crypter.encrypt(storedClaim);
-		String encryptedJson = JSON.encodeToString(encryptedClaim);
+		var encryptedContainer = crypter.encrypt(storedContainer);
+		String encryptedJson = JSON.encodeToString(encryptedContainer);
 		System.out.println(encryptedJson);
 		
-		var storedClaim2 = crypter.decrypt(encryptedClaim);
-		System.out.println(storedClaim2.getInnerEnvelope().getContents());
+		var storedContainer2 = crypter.decrypt(encryptedContainer);
+		System.out.println(storedContainer2.getInnerEnvelope().getContents());
 		
-		System.out.println(storedClaim.getId());
-		System.out.println(storedClaim2.getId());
+		System.out.println(storedContainer.getId());
+		System.out.println(storedContainer2.getId());
 	}
 }

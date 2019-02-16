@@ -6,5 +6,5 @@ import java.util.Set;
 
 public interface RemoteDHTNode extends Remote {
 	public Set<String> getPointers(String pattern) throws RemoteException;
-	public String getClaim(String id) throws RemoteException;
+	public String getContainer(String id) throws RemoteException;
 }

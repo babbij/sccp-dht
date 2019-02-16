@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHTSearcher;
-import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
+import com.goodforgoodbusiness.engine.store.container.ContainerStore;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
@@ -21,11 +21,11 @@ import spark.Route;
 public class MatchSearchRoute implements Route {
 	private static final Logger log = Logger.getLogger(MatchSearchRoute.class);
 	
-	private final ClaimStore store;
+	private final ContainerStore store;
 	private final DHTSearcher searcher;
 	
 	@Inject
-	public MatchSearchRoute(ClaimStore store, DHTSearcher searcher) {
+	public MatchSearchRoute(ContainerStore store, DHTSearcher searcher) {
 		this.store = store;
 		this.searcher = searcher;
 	}
@@ -41,17 +41,17 @@ public class MatchSearchRoute implements Route {
 				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
 			}
 			
-			// search for remote claims, store in local store
-			var newClaims = searcher.search(tuple, true).collect(toSet());
-			if (log.isDebugEnabled()) log.debug("new = " + newClaims);
+			// search for remote containers, store in local store
+			var newContainers = searcher.search(tuple, true).collect(toSet());
+			if (log.isDebugEnabled()) log.debug("new = " + newContainers);
 			
-			// retrieve all claims from local store
+			// retrieve all containers from local store
 			// includes those just fetched and others we already knew.
-			var knownClaims = store.search(tuple).collect(toSet());
-			if (log.isDebugEnabled()) log.debug("known = " + knownClaims);
+			var knownContainers = store.search(tuple).collect(toSet());
+			if (log.isDebugEnabled()) log.debug("known = " + knownContainers);
 			
-			// return known claims
-			return JSON.encode(knownClaims);
+			// return known containers
+			return JSON.encode(knownContainers);
 		}
 		else {
 			throw new BadRequestException("Must specify a triple");

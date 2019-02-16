@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
-import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedContainer;
 import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -24,7 +24,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * A cache layer for retrieving claims in the collection representing what's loaded on to the DHT
+ * A cache layer for retrieving containers in the collection representing what's loaded on to the DHT
  */
 @Singleton
 public class CachingDHT implements DHT {
@@ -32,7 +32,7 @@ public class CachingDHT implements DHT {
 	public @interface Underlying {}
 	
 	private final Cache<String, Set<EncryptedPointer>> pointerCache;
-	private final Cache<String, Optional<EncryptedClaim>> claimCache;
+	private final Cache<String, Optional<EncryptedContainer>> containerCache;
 	private final DHT underlying;
 	
 	@Inject
@@ -44,7 +44,7 @@ public class CachingDHT implements DHT {
 			.build()
 		;
 		
-		this.claimCache = CacheBuilder
+		this.containerCache = CacheBuilder
 			.newBuilder()
 			.expireAfterWrite(cacheDuration)
 			.maximumSize(1000)
@@ -71,9 +71,9 @@ public class CachingDHT implements DHT {
 	}
 
 	@Override
-	public Optional<EncryptedClaim> getClaim(String id, EncryptedPointer originalPointer) {
+	public Optional<EncryptedContainer> getContainer(String id, EncryptedPointer originalPointer) {
 		try {
-			return claimCache.get(id, () -> underlying.getClaim(id, originalPointer));
+			return containerCache.get(id, () -> underlying.getContainer(id, originalPointer));
 		}
 		catch (ExecutionException ee) {
 			throw new RuntimeException(ee);
@@ -81,8 +81,8 @@ public class CachingDHT implements DHT {
 	}
 
 	@Override
-	public void putClaim(EncryptedClaim encryptedClaim) {
-		underlying.putClaim(encryptedClaim);
-		claimCache.put(encryptedClaim.getId(), Optional.of(encryptedClaim));
+	public void putContainer(EncryptedContainer encryptedContainer) {
+		underlying.putContainer(encryptedContainer);
+		containerCache.put(encryptedContainer.getId(), Optional.of(encryptedContainer));
 	}
 }

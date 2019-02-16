@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.dht.DHT;
 import com.goodforgoodbusiness.engine.dht.impl.MongoDHT;
-import com.goodforgoodbusiness.model.EncryptedClaim;
+import com.goodforgoodbusiness.model.EncryptedContainer;
 import com.goodforgoodbusiness.model.EncryptedPointer;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
@@ -23,9 +23,9 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
 /**
- * Store claims on our pseudo-DHT for testing.
+ * Store containers on our pseudo-DHT for testing.
  * 
- * Extends MongoDHT because it stores claims there for retrieval,
+ * Extends MongoDHT because it stores containers there for retrieval,
  * but this time by the same instance and others over RMI.
  */
 @Singleton
@@ -83,7 +83,7 @@ public class RemoteDHT implements DHT {
 				return nodeLookup.lookup(nodeUrl).getPointers(pattern).stream();
 			}
 			catch (RemoteException | ExecutionException e) {
-				log.error("Could not fetch claim: " + e.getMessage());
+				log.error("Could not fetch container: " + e.getMessage());
 				nodeLookup.invalidate(nodeUrl);
 				
 				try {
@@ -99,30 +99,30 @@ public class RemoteDHT implements DHT {
 	}
 
 	@Override
-	public void putClaim(EncryptedClaim claim) {
-		mongo.putClaim(claim);
+	public void putContainer(EncryptedContainer container) {
+		mongo.putContainer(container);
 	}
 	
 	@Override
-	public Optional<EncryptedClaim> getClaim(String id, EncryptedPointer pointer) {
+	public Optional<EncryptedContainer> getContainer(String id, EncryptedPointer pointer) {
 		if (!(pointer instanceof RetrievedPointer)) {
-			throw new IllegalArgumentException("Can only get claims for pointers retrieved directly from the DHT"); 
+			throw new IllegalArgumentException("Can only get containers for pointers retrieved directly from the DHT"); 
 		}
 		
 		String nodeUrl = ((RetrievedPointer)pointer).nodeUrl;
-		log.debug("Get claim: " + id + " from " + nodeUrl);
+		log.debug("Get container: " + id + " from " + nodeUrl);
 		
 		// run this twice in case of net problems
 		for (var i = 0; i < 2; i++) {
 			try {
 				var node = nodeLookup.lookup(nodeUrl);
 				return Optional
-					.ofNullable(node.getClaim(id))
-					.map(result -> JSON.decode(result, EncryptedClaim.class))
+					.ofNullable(node.getContainer(id))
+					.map(result -> JSON.decode(result, EncryptedContainer.class))
 				;
 			}
 			catch (RemoteException | ExecutionException e) {
-				log.error("Could not fetch claim: " + e.getMessage());
+				log.error("Could not fetch container: " + e.getMessage());
 				nodeLookup.invalidate(nodeUrl);
 				
 				try {

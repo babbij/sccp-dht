@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.store.claim.impl;
+package com.goodforgoodbusiness.engine.store.container.impl;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Indexes.ascending;
@@ -10,8 +10,8 @@ import java.util.stream.StreamSupport;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
-import com.goodforgoodbusiness.engine.store.claim.ClaimStore;
-import com.goodforgoodbusiness.model.StoredClaim;
+import com.goodforgoodbusiness.engine.store.container.ContainerStore;
+import com.goodforgoodbusiness.model.StoredContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
@@ -26,18 +26,18 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.ReplaceOptions;
 
 @Singleton
-public class MongoClaimStore implements ClaimStore {
-	private static final Logger log = Logger.getLogger(MongoClaimStore.class);
+public class MongoContainerStore implements ContainerStore {
+	private static final Logger log = Logger.getLogger(MongoContainerStore.class);
 	
 	private static final String CL_INDEX = "index";
-	private static final String CL_CLAIM = "claim";
+	private static final String CL_CONTAINER = "container";
 	
 	private final MongoClient client;
 	private final ConnectionString connectionString;
 	private final MongoDatabase database;
 	
 	@Inject
-	public MongoClaimStore(@Named("claimstore.connectionUrl") String connectionUrl) {
+	public MongoContainerStore(@Named("containerstore.connectionUrl") String connectionUrl) {
 		this.connectionString = new ConnectionString(connectionUrl);
 		this.client =  MongoClients.create(connectionString);
 		this.database = client.getDatabase(connectionString.getDatabase());
@@ -45,25 +45,25 @@ public class MongoClaimStore implements ClaimStore {
 		var indexCollection = database.getCollection(CL_INDEX);
 		indexCollection.createIndex(ascending("pattern"));
 
-		var claimCollection = database.getCollection(CL_CLAIM);
-		claimCollection.createIndex(ascending("inner_envelope.hashkey"), new IndexOptions().unique(true));
+		var containerCollection = database.getCollection(CL_CONTAINER);
+		containerCollection.createIndex(ascending("inner_envelope.hashkey"), new IndexOptions().unique(true));
 	}
 	
 	@Override
-	public void save(StoredClaim claim) {
-		log.debug("Put claim: " + claim.getId());
+	public void save(StoredContainer container) {
+		log.debug("Put container: " + container.getId());
 		
-		// store claim as full JSON document
+		// store container as full JSON document
 		database
-			.getCollection(CL_CLAIM)
+			.getCollection(CL_CONTAINER)
 			.replaceOne(
-				eq("inner_envelope.hashkey", claim.getId()),
-				Document.parse(JSON.encodeToString(claim)),
+				eq("inner_envelope.hashkey", container.getId()),
+				Document.parse(JSON.encodeToString(container)),
 				new ReplaceOptions().upsert(true)
 			);
 		
 		// store patterns with all combinations, similar to DHT
-		claim
+		container
 			.getTriples()
 			.flatMap(triple -> TriTuple.from(triple).matchingCombinations())
 			.forEach(tuple -> { 
@@ -72,14 +72,14 @@ public class MongoClaimStore implements ClaimStore {
 					.insertOne(	
 						new Document()
 							.append("tuple", Document.parse(JSON.encodeToString(tuple)))
-							.append("claim", claim.getId())
+							.append("container", container.getId())
 					);
 			});
 		;
 	}
 
 	@Override
-	public Stream<StoredClaim> search(TriTuple tt) {
+	public Stream<StoredContainer> search(TriTuple tt) {
 		// find any pointers for the pattern
 		return 
 			StreamSupport.stream(
@@ -95,44 +95,44 @@ public class MongoClaimStore implements ClaimStore {
 				true
 			)
 			.parallel()
-			.map(doc -> doc.getString("claim"))
-			.map(this::getClaim)
+			.map(doc -> doc.getString("container"))
+			.map(this::getContainer)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 		;
 	}
 	
-	public Optional<StoredClaim> getClaim(String id) {
+	public Optional<StoredContainer> getContainer(String id) {
 		return 
 			Optional.ofNullable(
 				database
-					.getCollection(CL_CLAIM)
+					.getCollection(CL_CONTAINER)
 				 	.find(eq("inner_envelope.hashkey", id))
 				 	.first()
 			)
-			.map(doc -> JSON.decode(doc.toJson(), StoredClaim.class))
+			.map(doc -> JSON.decode(doc.toJson(), StoredContainer.class))
 		;
 	}
 	
-	protected Stream<StoredClaim> allClaims() {
+	protected Stream<StoredContainer> allContainers() {
 		return 
 			StreamSupport.stream(
 				database
-					.getCollection(CL_CLAIM)
+					.getCollection(CL_CONTAINER)
 				 	.find()
 				 	.spliterator(),
 				 true
 			)
-			.map(doc -> JSON.decode(doc.toJson(), StoredClaim.class))
+			.map(doc -> JSON.decode(doc.toJson(), StoredContainer.class))
 		;
 	}
 	
 	@Override
-	public boolean contains(String claimId) {
+	public boolean contains(String containerId) {
 		long count = database
-			.getCollection(CL_CLAIM)
+			.getCollection(CL_CONTAINER)
 			.countDocuments(
-				eq("inner_envelope.hashkey", claimId)
+				eq("inner_envelope.hashkey", containerId)
 			);
 		
 		return count > 0;
