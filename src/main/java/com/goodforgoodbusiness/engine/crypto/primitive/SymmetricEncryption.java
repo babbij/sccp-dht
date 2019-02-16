@@ -12,6 +12,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableKeyException;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableSecretKey;
@@ -39,6 +40,15 @@ public class SymmetricEncryption {
 			return new EncodeableSecretKey(keyGen.generateKey());
 		}
 		catch (EncodeableKeyException | NoSuchAlgorithmException e) {
+			throw new RuntimeException("Unexpected crypto error", e);
+		}
+	}
+	
+	public static EncodeableSecretKey createKeyFrom(byte [] input) {
+		try {
+			return new EncodeableSecretKey(new SecretKeySpec(input, EncodeableSecretKey.KEY_ALGORITHM));
+		}
+		catch (EncodeableKeyException e) {
 			throw new RuntimeException("Unexpected crypto error", e);
 		}
 	}

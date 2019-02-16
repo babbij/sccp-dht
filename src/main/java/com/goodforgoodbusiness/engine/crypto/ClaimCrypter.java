@@ -32,15 +32,18 @@ public class ClaimCrypter {
 	}
 
 	public EncryptedClaim encrypt(StoredClaim claim) throws EncryptionException {
-		var encryptedContents = SymmetricEncryption.encrypt(
-			JSON.encodeToString(claim.getInnerEnvelope().getContents()),
-			secretKey
-		);
+		var contents = JSON.encodeToString(claim.getInnerEnvelope().getContents());
+		
+		// encryption round 1: convergent encryption (using id)
+		var encryptRound1 = SymmetricEncryption.encrypt(contents, claim.getConvergentKey());
+		
+		// encryption round 2: secret key
+		var encryptRound2 = SymmetricEncryption.encrypt(encryptRound1, secretKey);
 		
 		return new EncryptedClaim(
 			new EncryptedEnvelope(
 				claim.getId(),
-				encryptedContents,
+				encryptRound2,
 				claim.getInnerEnvelope().getLinkVerifier(),
 				claim.getInnerEnvelope().getSignature()
 			),
@@ -49,18 +52,16 @@ public class ClaimCrypter {
 		);
 	}
 	
-	public StoredClaim decrypt(EncryptedClaim claim) throws EncryptionException {
-		var contents = JSON.decode(
-			SymmetricEncryption.decrypt(
-				claim.getInnerEnvelope().getContents(),
-				secretKey
-			),
-			Contents.class
-		);
+	public StoredClaim decrypt(EncryptedClaim claim) throws EncryptionException {		
+		// decryption round 1: secret key
+		var decryptRound1 = SymmetricEncryption.decrypt(claim.getInnerEnvelope().getContents(), secretKey);
+		
+		// decryption round 2: convergent encryption (using id)
+		var decryptRound2 = SymmetricEncryption.decrypt(decryptRound1, claim.getConvergentKey());
 		
 		return new StoredClaim(
 			new Envelope(
-				contents,
+				JSON.decode(decryptRound2, Contents.class),
 				claim.getInnerEnvelope().getLinkVerifier(),
 				claim.getInnerEnvelope().getSignature()
 			),

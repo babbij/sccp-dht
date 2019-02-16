@@ -33,7 +33,7 @@ public final class AttributeMaker {
 			tt.getObject().orElse(null) 
 		});
 		
-		return PREFIX + Hex.encode(Rounds.apply(Hash::sha256, cbor, 3)); // three rounds
+		return PREFIX + Hex.encode(Rounds.apply(Hash::sha512, cbor, 3)); // three rounds
 	}
 	
 	/**

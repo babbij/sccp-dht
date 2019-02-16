@@ -1,23 +1,20 @@
-package com.goodforgoodbusiness.engine;
+package com.goodforgoodbusiness.engine.crypto.primitive;
 
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
 import com.goodforgoodbusiness.engine.ClaimBuilder;
-import com.goodforgoodbusiness.engine.crypto.ClaimCrypter;
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
 import com.goodforgoodbusiness.model.Link;
 import com.goodforgoodbusiness.model.Link.RelType;
 import com.goodforgoodbusiness.model.SubmittableClaim;
 import com.goodforgoodbusiness.shared.encode.JSON;
 
-public class ClaimBuilderTest {
+public class ConvergentEncryptionTest {
 	public static void main(String[] args) throws Exception {
 		var kp = AsymmetricEncryption.createKeyPair();
 		var id = new Identity("foo", kp.getPrivate().toEncodedString(), kp.getPublic().toEncodedString());
-		
 		
 		var claimBuilder = new ClaimBuilder(id);
 		
@@ -39,19 +36,13 @@ public class ClaimBuilderTest {
 		
 		var storedClaim = claimBuilder.buildFrom(submittedClaim);
 		
-		var storedJson = JSON.encodeToString(storedClaim);
-		System.out.println(storedJson);
+		// now try convergent encryption
 		
-		var crypter = new ClaimCrypter();
+		var json = JSON.encodeToString(storedClaim);
 		
-		var encryptedClaim = crypter.encrypt(storedClaim);
-		String encryptedJson = JSON.encodeToString(encryptedClaim);
-		System.out.println(encryptedJson);
+		var ciphertext = SymmetricEncryption.encrypt(json, storedClaim.getConvergentKey());
+		var cleartext = SymmetricEncryption.decrypt(ciphertext, storedClaim.getConvergentKey());
 		
-		var storedClaim2 = crypter.decrypt(encryptedClaim);
-		System.out.println(storedClaim2.getInnerEnvelope().getContents());
-		
-		System.out.println(storedClaim.getId());
-		System.out.println(storedClaim2.getId());
+		System.out.println(cleartext.equals(json));
 	}
 }

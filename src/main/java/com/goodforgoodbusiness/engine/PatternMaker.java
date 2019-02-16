@@ -23,7 +23,7 @@ public final class PatternMaker {
 			tt.getObject().orElse(null) 
 		});
 		
-		return Hex.encode(Rounds.apply(Hash::sha256, cbor, 2)); // two rounds
+		return Hex.encode(Rounds.apply(Hash::sha512, cbor, 2)); // two rounds
 	}
 	
 	/**

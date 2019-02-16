@@ -1,11 +1,10 @@
 package com.goodforgoodbusiness.engine.crypto.primitive;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.SymmetricEncryption;
 import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableSecretKey;
 
 public class SymmetricEncryptionTest {
 	public static void main(String[] args) throws Exception {
-		// create
+		// create key from bytes
 		EncodeableSecretKey key = SymmetricEncryption.createKey();
 		
 		var ciphertext = SymmetricEncryption.encrypt("hello world", key);

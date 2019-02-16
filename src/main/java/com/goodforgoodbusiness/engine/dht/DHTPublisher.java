@@ -48,7 +48,7 @@ public class DHTPublisher {
 	public void publishClaim(StoredClaim claim) throws EncryptionException {
 		log.debug("Publishing claim: " + claim.getId());
 		
-		var crypter = new ClaimCrypter(); // with new symmetric key for claim
+		var crypter = new ClaimCrypter(); // creates a new key
 		var encryptedClaim = crypter.encrypt(claim);
 		
 		dht.putClaim(encryptedClaim);
