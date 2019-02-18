@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.model.TriTuple;
@@ -22,7 +22,7 @@ public class MemKeyStore implements ShareKeyStore {
 	private Map<KPABEPublicKey, Set<String>> shareKeys = new HashMap<>();
 	
 	@Override
-	public Stream<KPABEPublicKey> knownInfoCreators(TriTuple pattern) {
+	public Stream<KPABEPublicKey> knownContainerCreators(TriTuple pattern) {
 		return pattern.matchingCombinations()
 			.flatMap(tuple -> sharers.getOrDefault(tuple, emptySet()).stream())
 			.map(storedKey -> new KPABEPublicKey(storedKey))

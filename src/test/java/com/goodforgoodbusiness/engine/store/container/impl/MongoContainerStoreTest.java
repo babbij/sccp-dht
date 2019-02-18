@@ -5,8 +5,8 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.util.NodeFactoryExtra;
 
 import com.goodforgoodbusiness.engine.ContainerBuilder;
+import com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption;
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
 import com.goodforgoodbusiness.engine.store.container.impl.MongoContainerStore;
 import com.goodforgoodbusiness.model.SubmittableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
@@ -31,7 +31,7 @@ public class MongoContainerStoreTest {
 		var storedContainer = containerBuilder.buildFrom(submittedContainer);
 		store.save(storedContainer);
 		
-		store.search(TriTuple.from(trup)).forEach(c -> {
+		store.searchForPattern(TriTuple.from(trup)).forEach(c -> {
 			System.out.println(c);
 			c.getAdded().forEach(triple -> {
 				System.out.println(triple.getSubject());

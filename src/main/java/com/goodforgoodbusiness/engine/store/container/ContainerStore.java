@@ -3,7 +3,7 @@ package com.goodforgoodbusiness.engine.store.container;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.goodforgoodbusiness.model.StoredContainer;
+import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 
 /**
@@ -19,15 +19,15 @@ public interface ContainerStore {
 	/**
 	 * Get container by ID
 	 */
-	public Optional<StoredContainer> getContainer(String containerId);
+	public Optional<StorableContainer> fetch(String containerId);
 	
 	/**
 	 * Store a container we've found locally 
 	 */
-	public void save(StoredContainer container);
+	public void save(StorableContainer container);
 
 	/**
 	 * Find containers for a Tri Tuple 
 	 */
-	public Stream<StoredContainer> search(TriTuple tt);
+	public Stream<StorableContainer> searchForPattern(TriTuple tt);
 }

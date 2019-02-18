@@ -1,6 +1,7 @@
 package com.goodforgoodbusiness.engine.crypto.primitive;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableSecretKey;
+import com.goodforgoodbusiness.engine.crypto.SymmetricEncryption;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableSecretKey;
 
 public class SymmetricEncryptionTest {
 	public static void main(String[] args) throws Exception {

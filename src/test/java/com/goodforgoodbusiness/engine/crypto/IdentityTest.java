@@ -1,7 +1,6 @@
 package com.goodforgoodbusiness.engine.crypto;
 
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
 
 public class IdentityTest {
 	public static void main(String[] args) throws Exception {

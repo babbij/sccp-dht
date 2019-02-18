@@ -8,17 +8,16 @@ import java.util.stream.Collectors;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.engine.crypto.KeyManager;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.TriTuple;
 
 public class PatternMakerTest {
 	public static void main(String[] args) throws Exception {
 		var kpabe = KPABELocalInstance.newKeys();
-		var keyManager = new KeyManager(kpabe.getPublicKey(), kpabe.getSecretKey());
+		var keyManager = new ShareManager(kpabe.getPublicKey(), kpabe.getSecretKey());
 		
 		System.out.println(
-			PatternMaker.forPublish(
+			Patterns.forPublish(
 				keyManager,
 				TriTuple.from(new Triple(
 					createURI("https://twitter.com/ijmad8x"),
@@ -29,7 +28,7 @@ public class PatternMakerTest {
 		);
 		
 		System.out.println(
-			PatternMaker.forSearch(
+			Patterns.forSearch(
 				kpabe.getPublicKey(),
 				TriTuple.from(
 					new Triple(
@@ -42,7 +41,7 @@ public class PatternMakerTest {
 		);
 		
 		System.out.println(
-			PatternMaker.forSearch(
+			Patterns.forSearch(
 				kpabe.getPublicKey(),
 				TriTuple.from(
 					new Triple(
@@ -55,7 +54,7 @@ public class PatternMakerTest {
 		);
 		
 		System.out.println(
-			PatternMaker.forSearch(
+			Patterns.forSearch(
 				kpabe.getPublicKey(),
 				TriTuple.from(
 					new Triple(

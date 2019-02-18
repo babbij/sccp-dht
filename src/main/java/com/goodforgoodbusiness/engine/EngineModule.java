@@ -12,16 +12,10 @@ import java.util.Properties;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.log4j.Logger;
 
+import com.goodforgoodbusiness.engine.backend.DHTBackend;
+import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTBackend;
+import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTSupport;
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.KeyManager;
-import com.goodforgoodbusiness.engine.crypto.ShareKeyCreator;
-import com.goodforgoodbusiness.engine.crypto.pointer.LocalPointerCrypter;
-import com.goodforgoodbusiness.engine.crypto.pointer.PointerCrypter;
-import com.goodforgoodbusiness.engine.dht.DHT;
-import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
-import com.goodforgoodbusiness.engine.dht.DHTPublisher;
-import com.goodforgoodbusiness.engine.dht.DHTSearcher;
-import com.goodforgoodbusiness.engine.dht.impl.remote.RemoteDHT;
 import com.goodforgoodbusiness.engine.route.ContainerSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
 import com.goodforgoodbusiness.engine.route.PingRoute;
@@ -29,10 +23,12 @@ import com.goodforgoodbusiness.engine.route.ShareAcceptRoute;
 import com.goodforgoodbusiness.engine.route.ShareRequestRoute;
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
 import com.goodforgoodbusiness.engine.store.container.impl.CachingContainerStore;
-import com.goodforgoodbusiness.engine.store.container.impl.MongoContainerStore;
 import com.goodforgoodbusiness.engine.store.container.impl.CachingContainerStore.Underlying;
+import com.goodforgoodbusiness.engine.store.container.impl.MongoContainerStore;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.engine.store.keys.impl.MongoKeyStore;
+import com.goodforgoodbusiness.engine.warp.Warp;
+import com.goodforgoodbusiness.engine.weft.Weft;
 import com.goodforgoodbusiness.shared.LogConfigurer;
 import com.goodforgoodbusiness.webapp.Resource;
 import com.goodforgoodbusiness.webapp.Webapp;
@@ -60,15 +56,19 @@ public class EngineModule extends AbstractModule {
 			
 			bind(Identity.class);
 			
-			bind(DHTAccessGovernor.class);
-			bind(DHTPublisher.class);
-			bind(DHTSearcher.class);
+			bind(Governer.class);
+			bind(Publisher.class);
+			bind(Searcher.class);
 			bind(ContainerBuilder.class);
-			bind(ShareKeyCreator.class);
-			bind(KeyManager.class);
-			bind(PointerCrypter.class).to(LocalPointerCrypter.class);
 			
-			bind(DHT.class).to(RemoteDHT.class);
+			bind(Warp.class);
+			bind(Weft.class);
+			
+			bind(ShareManager.class);
+			
+			bind(DHTBackend.class).to(RemoteDHTBackend.class);
+			bind(RemoteDHTSupport.class);
+			
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
 			if (config.getBoolean("claimstore.cache.enabled", false)) {

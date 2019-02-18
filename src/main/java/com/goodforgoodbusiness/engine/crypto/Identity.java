@@ -2,11 +2,9 @@ package com.goodforgoodbusiness.engine.crypto;
 
 import java.security.PublicKey;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
-import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableKeyException;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeablePrivateKey;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeablePublicKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableKeyException;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeablePrivateKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeablePublicKey;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 

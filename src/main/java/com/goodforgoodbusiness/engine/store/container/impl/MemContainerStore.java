@@ -10,17 +10,17 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
-import com.goodforgoodbusiness.model.StoredContainer;
+import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class MemContainerStore implements ContainerStore {
-	private final Map<String, StoredContainer> containersById;
-	private final Map<TriTuple, Set<StoredContainer>> containersByPattern;
+	private final Map<String, StorableContainer> containersById;
+	private final Map<TriTuple, Set<StorableContainer>> containersByPattern;
 	
-	public MemContainerStore(Map<String, StoredContainer> containersById, Map<TriTuple, Set<StoredContainer>> containersByPattern) {
+	public MemContainerStore(Map<String, StorableContainer> containersById, Map<TriTuple, Set<StorableContainer>> containersByPattern) {
 		this.containersById = containersById;
 		this.containersByPattern = containersByPattern;
 	}
@@ -35,12 +35,12 @@ public class MemContainerStore implements ContainerStore {
 		return containersById.containsKey(containerId);
 	}
 	
-	public Optional<StoredContainer> getContainer(String id) {
+	public Optional<StorableContainer> fetch(String id) {
 		return Optional.ofNullable(containersById.get(id));
 	}
 	
 	@Override
-	public void save(StoredContainer container) {
+	public void save(StorableContainer container) {
 		synchronized (containersByPattern) {
 			// store triples in local store.
 			// we can recalculate the patterns since the container is fully unencrypted.
@@ -53,7 +53,7 @@ public class MemContainerStore implements ContainerStore {
 							containersByPattern.get(pattern).add(container);
 						}
 						else {
-							var set = new HashSet<StoredContainer>();
+							var set = new HashSet<StorableContainer>();
 							set.add(container);
 							containersByPattern.put(pattern, set);
 						}
@@ -66,7 +66,7 @@ public class MemContainerStore implements ContainerStore {
 	}
 
 	@Override
-	public Stream<StoredContainer> search(TriTuple tt) {
+	public Stream<StorableContainer> searchForPattern(TriTuple tt) {
 		synchronized (containersByPattern) {
 			return containersByPattern
 				.getOrDefault(tt, emptySet())

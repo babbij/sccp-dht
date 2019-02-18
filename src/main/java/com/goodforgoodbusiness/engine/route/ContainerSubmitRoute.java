@@ -3,7 +3,7 @@ package com.goodforgoodbusiness.engine.route;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.ContainerBuilder;
-import com.goodforgoodbusiness.engine.dht.DHTPublisher;
+import com.goodforgoodbusiness.engine.Publisher;
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
 import com.goodforgoodbusiness.model.SubmittableContainer;
 import com.goodforgoodbusiness.shared.encode.JSON;
@@ -22,10 +22,10 @@ public class ContainerSubmitRoute implements Route {
 	
 	private final ContainerBuilder builder;
 	private final ContainerStore store;
-	private final DHTPublisher publisher;
+	private final Publisher publisher;
 	
 	@Inject
-	public ContainerSubmitRoute(ContainerBuilder builder, ContainerStore store, DHTPublisher publisher) {
+	public ContainerSubmitRoute(ContainerBuilder builder, ContainerStore store, Publisher publisher) {
 		this.builder = builder;
 		this.store = store;
 		this.publisher = publisher;
@@ -40,7 +40,7 @@ public class ContainerSubmitRoute implements Route {
 		
 		// store locally + push to DHt
 		store.save(container);
-		publisher.publishContainer(container);
+		publisher.publish(container);
 		
 		// result is { "id" : <hash> }
 		var o = new JsonObject();

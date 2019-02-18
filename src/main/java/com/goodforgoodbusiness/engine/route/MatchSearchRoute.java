@@ -4,7 +4,7 @@ import static java.util.stream.Collectors.toSet;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.dht.DHTSearcher;
+import com.goodforgoodbusiness.engine.Searcher;
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
@@ -22,10 +22,10 @@ public class MatchSearchRoute implements Route {
 	private static final Logger log = Logger.getLogger(MatchSearchRoute.class);
 	
 	private final ContainerStore store;
-	private final DHTSearcher searcher;
+	private final Searcher searcher;
 	
 	@Inject
-	public MatchSearchRoute(ContainerStore store, DHTSearcher searcher) {
+	public MatchSearchRoute(ContainerStore store, Searcher searcher) {
 		this.store = store;
 		this.searcher = searcher;
 	}
@@ -47,7 +47,7 @@ public class MatchSearchRoute implements Route {
 			
 			// retrieve all containers from local store
 			// includes those just fetched and others we already knew.
-			var knownContainers = store.search(tuple).collect(toSet());
+			var knownContainers = store.searchForPattern(tuple).collect(toSet());
 			if (log.isDebugEnabled()) log.debug("known = " + knownContainers);
 			
 			// return known containers

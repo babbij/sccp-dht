@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
-import com.goodforgoodbusiness.model.StoredContainer;
+import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
@@ -50,7 +50,7 @@ public class MongoContainerStore implements ContainerStore {
 	}
 	
 	@Override
-	public void save(StoredContainer container) {
+	public void save(StorableContainer container) {
 		log.debug("Put container: " + container.getId());
 		
 		// store container as full JSON document
@@ -79,7 +79,7 @@ public class MongoContainerStore implements ContainerStore {
 	}
 
 	@Override
-	public Stream<StoredContainer> search(TriTuple tt) {
+	public Stream<StorableContainer> searchForPattern(TriTuple tt) {
 		// find any pointers for the pattern
 		return 
 			StreamSupport.stream(
@@ -96,13 +96,13 @@ public class MongoContainerStore implements ContainerStore {
 			)
 			.parallel()
 			.map(doc -> doc.getString("container"))
-			.map(this::getContainer)
+			.map(this::fetch)
 			.filter(Optional::isPresent)
 			.map(Optional::get)
 		;
 	}
 	
-	public Optional<StoredContainer> getContainer(String id) {
+	public Optional<StorableContainer> fetch(String id) {
 		return 
 			Optional.ofNullable(
 				database
@@ -110,11 +110,11 @@ public class MongoContainerStore implements ContainerStore {
 				 	.find(eq("inner_envelope.hashkey", id))
 				 	.first()
 			)
-			.map(doc -> JSON.decode(doc.toJson(), StoredContainer.class))
+			.map(doc -> JSON.decode(doc.toJson(), StorableContainer.class))
 		;
 	}
 	
-	protected Stream<StoredContainer> allContainers() {
+	protected Stream<StorableContainer> allContainers() {
 		return 
 			StreamSupport.stream(
 				database
@@ -123,7 +123,7 @@ public class MongoContainerStore implements ContainerStore {
 				 	.spliterator(),
 				 true
 			)
-			.map(doc -> JSON.decode(doc.toJson(), StoredContainer.class))
+			.map(doc -> JSON.decode(doc.toJson(), StorableContainer.class))
 		;
 	}
 	

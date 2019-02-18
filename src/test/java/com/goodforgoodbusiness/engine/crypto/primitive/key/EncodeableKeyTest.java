@@ -1,7 +1,7 @@
 package com.goodforgoodbusiness.engine.crypto.primitive.key;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.SymmetricEncryption;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableSecretKey;
+import com.goodforgoodbusiness.engine.crypto.SymmetricEncryption;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableSecretKey;
 import com.goodforgoodbusiness.shared.encode.JSON;
 
 public class EncodeableKeyTest {

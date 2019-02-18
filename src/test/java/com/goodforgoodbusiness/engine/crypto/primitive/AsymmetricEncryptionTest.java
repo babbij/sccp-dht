@@ -1,8 +1,8 @@
 package com.goodforgoodbusiness.engine.crypto.primitive;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeablePrivateKey;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeablePublicKey;
+import com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeablePrivateKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeablePublicKey;
 
 public class AsymmetricEncryptionTest {
 	public static void main(String[] args) throws Exception {

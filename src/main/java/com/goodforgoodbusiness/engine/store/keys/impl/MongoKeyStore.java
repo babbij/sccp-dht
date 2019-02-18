@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.model.TriTuple;
@@ -41,7 +41,7 @@ public class MongoKeyStore implements ShareKeyStore {
 	}
 	
 	@Override
-	public Stream<KPABEPublicKey> knownInfoCreators(TriTuple pattern) {
+	public Stream<KPABEPublicKey> knownContainerCreators(TriTuple pattern) {
 		var filters = new LinkedList<Bson>();
 		
 		if (pattern.getSubject().isPresent()) {

@@ -17,7 +17,7 @@ public class AttributeMakerTest {
 	public static void main(String[] args) throws Exception {
 		var kpabe = KPABELocalInstance.newKeys();
 		
-		String attributes = AttributeMaker.forPublish(
+		String attributes = Attributes.forPublish(
 			kpabe.getPublicKey(),
 			Stream.of(
 				TriTuple.from(
@@ -40,7 +40,7 @@ public class AttributeMakerTest {
 		
 		System.out.println(attributes);
 		
-		var share1 = AttributeMaker.forShare(
+		var share1 = Attributes.forShare(
 			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(
@@ -55,7 +55,7 @@ public class AttributeMakerTest {
 		
 		System.out.println(share1);
 		
-		var share2 = AttributeMaker.forShare(
+		var share2 = Attributes.forShare(
 			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(
@@ -70,7 +70,7 @@ public class AttributeMakerTest {
 		
 		System.out.println(share2);
 		
-		var share3 = AttributeMaker.forShare(
+		var share3 = Attributes.forShare(
 			kpabe.getPublicKey(),
 			TriTuple.from(
 				new Triple(

@@ -1,5 +1,6 @@
 package com.goodforgoodbusiness.engine.crypto.primitive.key;
 
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.shared.encode.JSON;
 

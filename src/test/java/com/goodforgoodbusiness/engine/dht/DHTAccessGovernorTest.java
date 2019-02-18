@@ -8,6 +8,7 @@ import java.time.Duration;
 
 import org.apache.jena.graph.Triple;
 
+import com.goodforgoodbusiness.engine.Governer;
 import com.goodforgoodbusiness.model.TriTuple;
 
 public class DHTAccessGovernorTest {
@@ -19,7 +20,7 @@ public class DHTAccessGovernorTest {
 		var trip1 = TriTuple.from(new Triple(sub, pre, obj));
 		var trip2 = TriTuple.from(new Triple(sub, pre, ANY));
 		
-		var gov1 = new DHTAccessGovernor(true, Duration.ofSeconds(30));
+		var gov1 = new Governer(true, Duration.ofSeconds(30));
 		
 		System.out.println(gov1.allow(trip1)); // true
 		System.out.println(gov1.allow(trip1)); // false
@@ -30,14 +31,14 @@ public class DHTAccessGovernorTest {
 		
 		// also try a narrowing search
 		
-		var gov2 = new DHTAccessGovernor(true, Duration.ofSeconds(30));
+		var gov2 = new Governer(true, Duration.ofSeconds(30));
 		
 		System.out.println(gov2.allow(trip2)); // true
 		System.out.println(gov2.allow(trip1)); // false
 		
 		// but the inverse shouldn't be true
 		
-		var gov3 = new DHTAccessGovernor(true, Duration.ofSeconds(30));
+		var gov3 = new Governer(true, Duration.ofSeconds(30));
 		
 		System.out.println(gov3.allow(trip1)); // true
 		System.out.println(gov3.allow(trip2)); // true

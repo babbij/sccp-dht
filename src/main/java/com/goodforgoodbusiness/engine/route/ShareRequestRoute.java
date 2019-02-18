@@ -10,8 +10,8 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.ShareKeyCreator;
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.engine.ShareManager;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.goodforgoodbusiness.webapp.ContentType;
@@ -54,11 +54,11 @@ public class ShareRequestRoute implements Route {
 		}
 	}
 	
-	private final ShareKeyCreator shareKeyCreator;
+	private final ShareManager keyManager;
 	
 	@Inject
-	public ShareRequestRoute(ShareKeyCreator shareKeyCreator) {
-		this.shareKeyCreator = shareKeyCreator;
+	public ShareRequestRoute(ShareManager keyManager) {
+		this.keyManager = keyManager;
 	}
 	
 	@Override
@@ -85,7 +85,7 @@ public class ShareRequestRoute implements Route {
 				pattern, 
 				start,
 				end, 
-				shareKeyCreator.newKey(pattern, start, end)
+				keyManager.newShareKey(pattern, start, end)
 			)
 		);
 	}

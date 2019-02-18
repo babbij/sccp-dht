@@ -1,14 +1,14 @@
 package com.goodforgoodbusiness.engine;
 
-import static com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption.sign;
+import static com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption.sign;
 import static java.util.stream.Collectors.toList;
 
 import java.security.PrivateKey;
 import java.util.stream.Collectors;
 
+import com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption;
+import com.goodforgoodbusiness.engine.crypto.EncryptionException;
 import com.goodforgoodbusiness.engine.crypto.Identity;
-import com.goodforgoodbusiness.engine.crypto.primitive.AsymmetricEncryption;
-import com.goodforgoodbusiness.engine.crypto.primitive.EncryptionException;
 import com.goodforgoodbusiness.model.Contents;
 import com.goodforgoodbusiness.model.Contents.ContentsType;
 import com.goodforgoodbusiness.model.Envelope;
@@ -17,7 +17,7 @@ import com.goodforgoodbusiness.model.LinkSecret;
 import com.goodforgoodbusiness.model.LinkVerifier;
 import com.goodforgoodbusiness.model.ProvenLink;
 import com.goodforgoodbusiness.model.Signature;
-import com.goodforgoodbusiness.model.StoredContainer;
+import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.SubmittableContainer;
 import com.goodforgoodbusiness.shared.encode.CBOR;
 import com.google.inject.Inject;
@@ -35,7 +35,7 @@ public class ContainerBuilder {
 		this.identity = identity;
 	}
 	
-	public StoredContainer buildFrom(SubmittableContainer container) throws EncryptionException {
+	public StorableContainer buildFrom(SubmittableContainer container) throws EncryptionException {
 		try {
 			final var linkSigningPair = AsymmetricEncryption.createKeyPair();
 			
@@ -73,7 +73,7 @@ public class ContainerBuilder {
 				.map(link -> new ProvenLink(link, linkProof(innerEnvelope.getHashKey(), link, linkSigningPair.getPrivate())))
 				.collect(Collectors.toSet());
 			
-			return new StoredContainer(
+			return new StorableContainer(
 				innerEnvelope,
 				provedLinks,
 				new Signature(

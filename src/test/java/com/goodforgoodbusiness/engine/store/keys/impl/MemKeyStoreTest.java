@@ -9,7 +9,7 @@ import java.util.Optional;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.TriTuple;
 
@@ -43,7 +43,7 @@ public class MemKeyStoreTest {
 			)
 		);
 		
-		store.knownInfoCreators(tt1).forEach(r -> {
+		store.knownContainerCreators(tt1).forEach(r -> {
 			System.out.println(r);
 			System.out.println("⇒" + store.keysForDecrypt(r, tt1).collect(toList()));
 		});
@@ -59,7 +59,7 @@ public class MemKeyStoreTest {
 		);
 		
 		// check key is not returned when searching for wrong things
-		store.knownInfoCreators(tt2).forEach(r -> {
+		store.knownContainerCreators(tt2).forEach(r -> {
 			System.out.println(r);
 			System.out.println("⇒" + store.keysForDecrypt(r, tt2).collect(toList()));
 		});
@@ -75,7 +75,7 @@ public class MemKeyStoreTest {
 		);
 		
 		// check narrower but partial searches
-		store.knownInfoCreators(tt3).forEach(r -> {
+		store.knownContainerCreators(tt3).forEach(r -> {
 			System.out.println(r);
 			System.out.println("⇒" + store.keysForDecrypt(r, tt3).collect(toList()));
 		});
@@ -90,7 +90,7 @@ public class MemKeyStoreTest {
 			)
 		);
 		
-		store.knownInfoCreators(tt4).forEach(r -> {
+		store.knownContainerCreators(tt4).forEach(r -> {
 			System.out.println(r);
 			System.out.println("⇒" + store.keysForDecrypt(r, tt4).collect(toList()));
 		});

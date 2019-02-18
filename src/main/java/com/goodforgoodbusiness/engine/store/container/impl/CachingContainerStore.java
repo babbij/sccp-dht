@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.goodforgoodbusiness.engine.store.container.ContainerStore;
-import com.goodforgoodbusiness.model.StoredContainer;
+import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -23,7 +23,6 @@ import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
-
 
 /**
  * Caching wrapper for ContainerStore.
@@ -33,8 +32,8 @@ public class CachingContainerStore implements ContainerStore {
 	@BindingAnnotation @Target({ FIELD, PARAMETER, METHOD }) @Retention(RUNTIME)
 	public @interface Underlying {}
 	
-	private final Cache<String, Optional<StoredContainer>> containersById;
-	private final Cache<TriTuple, Set<StoredContainer>> containersByPattern;
+	private final Cache<String, Optional<StorableContainer>> containersById;
+	private final Cache<TriTuple, Set<StorableContainer>> containersByPattern;
 	
 	private final ContainerStore underlying;
 	
@@ -62,7 +61,7 @@ public class CachingContainerStore implements ContainerStore {
 	}
 
 	@Override
-	public void save(StoredContainer container) {
+	public void save(StorableContainer container) {
 		underlying.save(container);
 		
 		container.getTriples()
@@ -74,9 +73,9 @@ public class CachingContainerStore implements ContainerStore {
 	}
 
 	@Override
-	public Stream<StoredContainer> search(TriTuple tt) {
+	public Stream<StorableContainer> searchForPattern(TriTuple tt) {
 		try {
-			Set<StoredContainer> set = containersByPattern.get(tt, () -> underlying.search(tt).collect(Collectors.toSet()));
+			Set<StorableContainer> set = containersByPattern.get(tt, () -> underlying.searchForPattern(tt).collect(Collectors.toSet()));
 			set.forEach(container -> containersById.put(container.getId(), Optional.of(container)));
 			return set.parallelStream();
 		}
@@ -86,9 +85,9 @@ public class CachingContainerStore implements ContainerStore {
 	}
 	
 	@Override
-	public Optional<StoredContainer> getContainer(String id) {
+	public Optional<StorableContainer> fetch(String id) {
 		try {
-			return containersById.get(id, () -> underlying.getContainer(id));
+			return containersById.get(id, () -> underlying.fetch(id));
 		}
 		catch (ExecutionException ee) {
 			throw new RuntimeException(ee);
@@ -97,6 +96,6 @@ public class CachingContainerStore implements ContainerStore {
 	
 	@Override
 	public boolean contains(String containerId) {
-		return getContainer(containerId).isPresent();
+		return fetch(containerId).isPresent();
 	}
 }

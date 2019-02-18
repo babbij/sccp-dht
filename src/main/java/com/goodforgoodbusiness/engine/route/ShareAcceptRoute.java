@@ -2,8 +2,8 @@ package com.goodforgoodbusiness.engine.route;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.engine.crypto.primitive.key.EncodeableShareKey;
-import com.goodforgoodbusiness.engine.dht.DHTAccessGovernor;
+import com.goodforgoodbusiness.engine.Governer;
+import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.encode.JSON;
@@ -31,10 +31,10 @@ public class ShareAcceptRoute implements Route {
 	}
 	
 	private final ShareKeyStore store;
-	private final DHTAccessGovernor cache;
+	private final Governer cache;
 	
 	@Inject
-	public ShareAcceptRoute(ShareKeyStore store, DHTAccessGovernor cache) {
+	public ShareAcceptRoute(ShareKeyStore store, Governer cache) {
 		this.store = store;
 		this.cache = cache;
 	}
