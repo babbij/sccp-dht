@@ -17,6 +17,9 @@ import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+/**
+ * Searcher brings together facilities from the Weft and Warp to find containers
+ */
 @Singleton
 public class Searcher {
 	private static final Logger log = Logger.getLogger(Searcher.class);
@@ -54,7 +57,7 @@ public class Searcher {
 						return weft.fetch(
 							pointer.getContainerId(),
 							new EncodeableSecretKey(pointer.getContainerKey())
-						).stream();
+						).stream(); // stream so it's just non-empty Optionals
 					}
 					catch (EncryptionException e) {
 						log.error("Couldn not decrypt container", e);

@@ -41,7 +41,7 @@ public class MemDHTBackend implements DHTBackend {
 	public Stream<String> search(String keyword) {
 		return Optional
 			.ofNullable(keysMap.get(keyword))
-			.stream()
+			.stream() // stream so it's just non-empty Optionals
 			.flatMap(Set::stream)
 		;
 	}

@@ -7,8 +7,7 @@ import com.goodforgoodbusiness.model.StorableContainer;
 import com.goodforgoodbusiness.model.TriTuple;
 
 /**
- * The local container store, where we store our containers and others received
-
+ * The local container store, where we store our containers and those received from others.
  */
 public interface ContainerStore {
 	/**

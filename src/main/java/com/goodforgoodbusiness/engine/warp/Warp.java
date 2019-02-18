@@ -95,7 +95,7 @@ public class Warp {
 	private Stream<Pointer> search(KPABEPublicKey creator, TriTuple tuple) {
 		var patternHash = Patterns.forSearch(creator, tuple);
 		log.debug("Searching warp for containers from " + creator.toString().substring(0, 10) + 
-			" with patterns " + patternHash.substring(0,  10) + "...");
+			"... with patterns " + patternHash.substring(0,  10) + "...");
 		
 		// have to process this stream because state is changed
 		return backend.search(patternHash)

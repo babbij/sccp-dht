@@ -10,6 +10,9 @@ import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+/**
+ * Publisher unifies the operations of publishing to both weft and warp.
+ */
 @Singleton
 public class Publisher {
 	private static final Logger log = Logger.getLogger(Publisher.class);
@@ -27,6 +30,9 @@ public class Publisher {
 		this.keyManager = keyManager;
 	}
 	
+	/**
+	 * Publish a container to the weft (storage) and warp (indexing)
+	 */
 	public void publish(StorableContainer container) throws EncryptionException {
 		log.debug("Publishing container: " + container.getId());
 		

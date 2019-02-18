@@ -18,7 +18,7 @@ import com.goodforgoodbusiness.shared.encode.Hex;
 import com.google.inject.Singleton;
 
 /**
- * Build attribute patterns for KP-ABE encryption routines
+ * Build attribute patterns for KP-ABE encryption routines for warp decryption.
  */
 @Singleton
 public final class Attributes {

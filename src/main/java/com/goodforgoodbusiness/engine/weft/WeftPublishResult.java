@@ -29,6 +29,9 @@ public final class WeftPublishResult {
 		return container;
 	}
 	
+	/**
+	 * This will be the container's JSON, encrypted.
+	 */
 	public String getPublishedData() {
 		return publishedData;
 	}

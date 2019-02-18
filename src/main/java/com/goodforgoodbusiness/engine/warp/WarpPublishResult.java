@@ -2,6 +2,9 @@ package com.goodforgoodbusiness.engine.warp;
 
 import com.goodforgoodbusiness.model.Pointer;
 
+/**
+ * A result of publishing to the warp.
+ */
 public class WarpPublishResult {
 	private final Pointer pointer;
 	
@@ -19,6 +22,9 @@ public class WarpPublishResult {
 		return pointer;
 	}
 	
+	/**
+	 * This will be the encrypted pointer
+	 */
 	public String getPublishedData() {
 		return publishedData;
 	}

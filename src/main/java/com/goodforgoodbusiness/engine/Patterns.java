@@ -10,7 +10,7 @@ import com.goodforgoodbusiness.shared.encode.Hash;
 import com.goodforgoodbusiness.shared.encode.Hex;
 
 /**
- * Build index patterns for publishing in to the DHT.
+ * Build index patterns for publishing in to the warp.
  */
 public final class Patterns {
 	private static String hash(KPABEPublicKey key, TriTuple tt) {
