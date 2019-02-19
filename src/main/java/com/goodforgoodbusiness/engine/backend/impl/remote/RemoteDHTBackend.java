@@ -41,7 +41,7 @@ public class RemoteDHTBackend implements DHTBackend {
 	}
 
 	@Override
-	public String publish(Set<String> keywords, String data) {
+	public Optional<String> publish(Set<String> keywords, String data) {
 		return backend.publish(keywords, data); // write-through to Mongo.
 	}
 	

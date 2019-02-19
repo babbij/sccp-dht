@@ -68,7 +68,13 @@ public class Warp {
 			var data = encrypt(pointer, accessPolicy);
 			var location = backend.publish(singleton(pattern), data);
 			
-			return Optional.of(new WarpPublishResult(pointer, location, data));
+			if (location.isPresent()) {
+				return Optional.of(new WarpPublishResult(pointer, location.get(), data));
+			}
+			else {
+				log.error("Unable to publish");
+				return Optional.empty();
+			}
 		}
 		catch (KPABEException e) {
 			log.error("Encryption Error", e);

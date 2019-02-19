@@ -13,7 +13,7 @@ public interface DHTBackend {
 	 * Returns a String representing where it's stored in the backing store.
 	 * Can be different representations depending on backend.
 	 */
-	public String publish(Set<String> keywords, String data);
+	public Optional<String> publish(Set<String> keywords, String data);
 	
 	/**
 	 * Searches the backend with a keyword as specified to publish.

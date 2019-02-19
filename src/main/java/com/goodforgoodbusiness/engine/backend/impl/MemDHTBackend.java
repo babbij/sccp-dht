@@ -18,7 +18,7 @@ public class MemDHTBackend implements DHTBackend {
 	private Map<String, String> dataMap = new HashMap<>();
 
 	@Override
-	public String publish(Set<String> keywords, String data) {
+	public Optional<String> publish(Set<String> keywords, String data) {
 		String location = Hex.encode(Hash.sha512(data.getBytes()));
 		dataMap.put(location, data);
 		
@@ -34,7 +34,7 @@ public class MemDHTBackend implements DHTBackend {
 			}
 		});
 		
-		return location;
+		return Optional.of(location);
 	}
 	
 	@Override

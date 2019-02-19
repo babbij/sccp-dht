@@ -37,14 +37,27 @@ public class Weft {
 	/** 
 	 * Push a container on to the {@link Weft}.
 	 */
-	public WeftPublishResult publish(StorableContainer container) throws EncryptionException {
+	public Optional<WeftPublishResult> publish(StorableContainer container) throws EncryptionException {
 		var secretKey = SymmetricEncryption.createKey();
 		
 		var encryptedContainer = encrypt(container, secretKey);
 		var data = JSON.encodeToString(encryptedContainer);
 		var location = backend.publish(singleton(encryptedContainer.getId()), data);
 		
-		return new WeftPublishResult(secretKey, encryptedContainer, location, data);
+		if (location.isPresent()) {
+			return Optional.of(
+				new WeftPublishResult(
+					secretKey,
+					encryptedContainer,
+					location.get(),
+					data
+				)
+			);
+		}
+		else {
+			log.error("Unable to publish");
+			return Optional.empty();
+		}
 	}
 	
 	/**

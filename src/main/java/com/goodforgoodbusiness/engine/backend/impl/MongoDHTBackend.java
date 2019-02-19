@@ -51,7 +51,7 @@ public class MongoDHTBackend implements DHTBackend {
 	}
 
 	@Override
-	public String publish(Set<String> keywords, String data) {
+	public Optional<String> publish(Set<String> keywords, String data) {
 		var doc = new Document("data", data);
 		data().insertOne(doc);
 		
@@ -63,7 +63,7 @@ public class MongoDHTBackend implements DHTBackend {
 			keys().insertOne(new Document("key", keyword).append("doc", docId));
 		});
 		
-		return docId.toHexString();
+		return Optional.of(docId.toHexString());
 	}
 	
 	@Override

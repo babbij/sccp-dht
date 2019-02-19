@@ -55,18 +55,21 @@ public class CachingDHTBackend implements DHTBackend {
 	}
 	
 	@Override
-	public String publish(Set<String> keywords, String data) {
+	public Optional<String> publish(Set<String> keywords, String data) {
 		var location = backend.publish(keywords, data);
-		dataCache.put(location, Optional.of(data));
 		
-		keywords.forEach(keyword -> {
-			try {
-				keysCache.get(keyword, () -> new HashSet<>()).add(location);
-			}
-			catch (ExecutionException e) {
-				throw new RuntimeException(e); // should never happen
-			}
-		});
+		if (location.isPresent()) {
+			dataCache.put(location.get(), Optional.of(data));
+			
+			keywords.forEach(keyword -> {
+				try {
+					keysCache.get(keyword, () -> new HashSet<>()).add(location.get());
+				}
+				catch (ExecutionException e) {
+					throw new RuntimeException(e); // should never happen
+				}
+			});
+		}
 		
 		return location;
 	}

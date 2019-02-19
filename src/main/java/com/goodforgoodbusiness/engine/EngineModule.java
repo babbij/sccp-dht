@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.backend.DHTBackend;
 import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTBackend;
-import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTSupport;
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.route.ContainerSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
@@ -67,7 +66,7 @@ public class EngineModule extends AbstractModule {
 			bind(ShareManager.class);
 			
 			bind(DHTBackend.class).to(RemoteDHTBackend.class);
-			bind(RemoteDHTSupport.class);
+      bind(RemoteDHTSupport.class);
 			
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
