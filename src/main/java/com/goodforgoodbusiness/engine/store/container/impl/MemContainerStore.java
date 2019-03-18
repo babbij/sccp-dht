@@ -35,6 +35,7 @@ public class MemContainerStore implements ContainerStore {
 		return containersById.containsKey(containerId);
 	}
 	
+	@Override
 	public Optional<StorableContainer> fetch(String id) {
 		return Optional.ofNullable(containersById.get(id));
 	}
@@ -58,7 +59,7 @@ public class MemContainerStore implements ContainerStore {
 							containersByPattern.put(pattern, set);
 						}
 					}
-				});
+				})
 			;
 			
 			containersById.put(container.getId(), container);

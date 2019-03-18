@@ -30,7 +30,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class CachingContainerStore implements ContainerStore {
 	@BindingAnnotation @Target({ FIELD, PARAMETER, METHOD }) @Retention(RUNTIME)
-	public @interface Underlying {}
+	public @interface Underlying { /* no params */ }
 	
 	private final Cache<String, Optional<StorableContainer>> containersById;
 	private final Cache<TriTuple, Set<StorableContainer>> containersByPattern;
@@ -66,7 +66,7 @@ public class CachingContainerStore implements ContainerStore {
 		
 		container.getTriples()
 			.flatMap(triple -> TriTuple.from(triple).matchingCombinations())
-			.forEach(pattern -> containersByPattern.invalidate(pattern));
+			.forEach(pattern -> containersByPattern.invalidate(pattern))
 		;
 		
 		containersById.put(container.getId(), Optional.of(container));

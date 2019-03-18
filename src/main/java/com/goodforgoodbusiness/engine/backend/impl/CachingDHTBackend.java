@@ -28,7 +28,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class CachingDHTBackend implements DHTBackend {
 	@BindingAnnotation @Target({ FIELD, PARAMETER, METHOD }) @Retention(RUNTIME)
-	public @interface Underlying {}
+	public @interface Underlying { /* no params */ }
 	
 	private final Cache<String, Set<String>> keysCache;
 	private final Cache<String, Optional<String>> dataCache;

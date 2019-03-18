@@ -12,10 +12,12 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
 import com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption;
-import com.google.gson.annotations.JsonAdapter;;
+import com.google.gson.annotations.JsonAdapter;
 
 @JsonAdapter(EncodeableKey.Serializer.class)
 public class EncodeablePrivateKey extends AbstractEncodeableKey implements EncodeableKey, PrivateKey, ECPrivateKey {
+	private static final long serialVersionUID = 1L;
+	
 	private static PrivateKey unencode(String encodedForm) throws EncodeableKeyException {
 		try {
 			var spec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(encodedForm.getBytes()));

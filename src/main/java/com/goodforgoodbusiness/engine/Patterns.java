@@ -44,7 +44,7 @@ public final class Patterns {
 	 */
 	public static String forSearch(KPABEPublicKey key, TriTuple tuple) {
 		return hash(key, tuple);
-	};
+	}
 	
 	private Patterns() {
 	}

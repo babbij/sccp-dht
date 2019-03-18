@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import com.goodforgoodbusiness.engine.backend.impl.MongoDHTBackend;
 
 public class RemoteDHTNodeImpl extends UnicastRemoteObject implements RemoteDHTNode {
+	private static final long serialVersionUID = 1L;
+	
 	private static final Logger log = Logger.getLogger(RemoteDHTNodeImpl.class);
 	
 	private final MongoDHTBackend backend;

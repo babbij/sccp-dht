@@ -3,6 +3,8 @@ package com.goodforgoodbusiness.engine.crypto.key;
 import java.security.Key;
 
 public abstract class AbstractEncodeableKey implements Key, EncodeableKey {
+	private static final long serialVersionUID = 1L;
+	
 	protected final Key key;
 
 	public AbstractEncodeableKey(Key key) {
@@ -40,7 +42,7 @@ public abstract class AbstractEncodeableKey implements Key, EncodeableKey {
 		}
 		
 		if (o instanceof Key) {
-			return key.equals((Key)o);
+			return key.equals(o);
 		}
 		
 		return false;

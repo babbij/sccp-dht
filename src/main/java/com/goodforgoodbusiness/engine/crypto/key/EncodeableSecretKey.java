@@ -10,6 +10,8 @@ import com.google.gson.annotations.JsonAdapter;
 
 @JsonAdapter(EncodeableKey.Serializer.class)
 public class EncodeableSecretKey extends AbstractEncodeableKey implements EncodeableKey, SecretKey {
+	private static final long serialVersionUID = 1L;
+	
 	public static final String KEY_ALGORITHM = "AES";
 	
 	private static SecretKey unencode(String encodedForm) {

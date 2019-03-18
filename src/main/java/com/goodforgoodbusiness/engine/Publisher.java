@@ -47,8 +47,9 @@ public class Publisher {
 			// create + publish a pointer for each generated pattern
 			container.getTriples()
 				.flatMap(t -> Patterns.forPublish(keyManager, TriTuple.from(t)))
-				.forEach(pattern -> warp.publish(container.getId(), pattern, attributes, publishResult.get().getKey()));
+				.forEach(pattern -> warp.publish(container.getId(), pattern, attributes, publishResult.get().getKey()))
 			;
+			
 			
 			return true;
 		}

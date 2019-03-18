@@ -51,7 +51,7 @@ public class RemoteDHTBackend implements DHTBackend {
 		return rmi.nodes().flatMap(node -> search(node, keyword));
 	}
 	
-	private Stream<String> search(RMINode node, String keyword) {
+	private static Stream<String> search(RMINode node, String keyword) {
 		log.debug("Trying node: " + node.getUrl());
 		
 		try {

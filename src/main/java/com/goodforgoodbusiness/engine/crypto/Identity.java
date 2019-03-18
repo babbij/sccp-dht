@@ -45,7 +45,7 @@ public class Identity {
 		return AsymmetricEncryption.sign(input, privateKey);
 	}
 	
-	public boolean verify(byte [] input, String signature, PublicKey publicKey) throws EncryptionException {
+	public static boolean verify(byte [] input, String signature, PublicKey publicKey) throws EncryptionException {
 		return AsymmetricEncryption.verify(input, signature, publicKey);
 	}
 	

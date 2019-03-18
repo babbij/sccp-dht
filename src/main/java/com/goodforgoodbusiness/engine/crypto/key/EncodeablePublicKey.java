@@ -16,6 +16,8 @@ import com.google.gson.annotations.JsonAdapter;
 
 @JsonAdapter(EncodeableKey.Serializer.class)
 public class EncodeablePublicKey extends AbstractEncodeableKey implements EncodeableKey, PublicKey, ECPublicKey {
+	private static final long serialVersionUID = 1L;
+	
 	private static PublicKey unencode(String encodedForm) throws EncodeableKeyException {
 		try {
 			var spec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedForm.getBytes()));

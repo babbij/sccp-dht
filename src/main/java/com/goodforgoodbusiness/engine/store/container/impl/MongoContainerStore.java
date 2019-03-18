@@ -74,7 +74,7 @@ public class MongoContainerStore implements ContainerStore {
 							.append("tuple", Document.parse(JSON.encodeToString(tuple)))
 							.append("container", container.getId())
 					);
-			});
+			})
 		;
 	}
 
@@ -102,6 +102,7 @@ public class MongoContainerStore implements ContainerStore {
 		;
 	}
 	
+	@Override
 	public Optional<StorableContainer> fetch(String id) {
 		return 
 			Optional.ofNullable(
