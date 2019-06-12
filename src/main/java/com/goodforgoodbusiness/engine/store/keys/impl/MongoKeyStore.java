@@ -56,12 +56,15 @@ public class MongoKeyStore implements ShareKeyStore {
 			filters.add(eq("pattern.obj", pattern.getObject().get()));
 		}
 		
+		var findQuery = 
+			filters.size() > 0 ?
+			database.getCollection(CL_KNOWN).find(or(filters)) : 
+			database.getCollection(CL_KNOWN).find()
+		;
+		
 		return 
 			stream(
-				database.getCollection(CL_KNOWN)
-					.find(or(filters))
-					.spliterator(),
-				true
+				findQuery.spliterator(), true
 			)
 			.map(storedPublicKey -> 
 				new KPABEPublicKey(storedPublicKey.getString("public"))
