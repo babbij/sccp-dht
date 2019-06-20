@@ -38,7 +38,8 @@ public class MatchSearchRoute implements Route {
 		if (tuple != null) {
 			log.info("Matches called for " + tuple);
 			if (!tuple.getSubject().isPresent() && !tuple.getObject().isPresent()) {
-				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
+				log.warn("This combination of s/p/o is not permitted");
+//				throw new BadRequestException("Searching DHT for (?, _, ?) or (_, _ , _) not supported");
 			}
 			
 			// search for remote containers, store in local store

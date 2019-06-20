@@ -13,7 +13,8 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.backend.DHTBackend;
-import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTBackend;
+import com.goodforgoodbusiness.engine.backend.DHTBackendOption;
+import com.goodforgoodbusiness.engine.backend.impl.remote.RemoteDHTSupport;
 import com.goodforgoodbusiness.engine.crypto.Identity;
 import com.goodforgoodbusiness.engine.route.ContainerSubmitRoute;
 import com.goodforgoodbusiness.engine.route.MatchSearchRoute;
@@ -65,8 +66,16 @@ public class EngineModule extends AbstractModule {
 			
 			bind(ShareManager.class);
 			
-			bind(DHTBackend.class).to(RemoteDHTBackend.class);
-      bind(RemoteDHTSupport.class);
+			if (config.containsKey("backend.impl")) {
+				var backendClazz = DHTBackendOption.valueOf(config.getString("backend.impl"));
+				bind(DHTBackend.class).to(backendClazz.getImplClass());
+				if (backendClazz == DHTBackendOption.REMOTE) {
+					bind(RemoteDHTSupport.class);
+				}
+			}
+			else {
+				throw new IllegalArgumentException("backend.impl was null");
+			}
 			
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
