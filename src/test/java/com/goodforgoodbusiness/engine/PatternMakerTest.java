@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
+import com.goodforgoodbusiness.kpabe.KPABEKeyManager;
 import com.goodforgoodbusiness.model.TriTuple;
 
 public class PatternMakerTest {
 	public static void main(String[] args) throws Exception {
-		var kpabe = KPABELocalInstance.newKeys();
-		var keyManager = new ShareManager(kpabe.getPublicKey(), kpabe.getSecretKey());
+		var keys = KPABEKeyManager.newKeys();
+		var keyManager = new ShareManager(keys.getPublic(), keys.getSecret());
 		
 		System.out.println(
 			Patterns.forPublish(
@@ -29,7 +29,7 @@ public class PatternMakerTest {
 		
 		System.out.println(
 			Patterns.forSearch(
-				kpabe.getPublicKey(),
+				keys.getPublic(),
 				TriTuple.from(
 					new Triple(
 						createURI("https://twitter.com/ijmad8x"),
@@ -42,7 +42,7 @@ public class PatternMakerTest {
 		
 		System.out.println(
 			Patterns.forSearch(
-				kpabe.getPublicKey(),
+				keys.getPublic(),
 				TriTuple.from(
 					new Triple(
 						createURI("https://twitter.com/ijmad8x"),
@@ -55,7 +55,7 @@ public class PatternMakerTest {
 		
 		System.out.println(
 			Patterns.forSearch(
-				kpabe.getPublicKey(),
+				keys.getPublic(),
 				TriTuple.from(
 					new Triple(
 						Node.ANY,

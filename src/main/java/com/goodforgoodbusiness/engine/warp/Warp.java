@@ -20,9 +20,10 @@ import com.goodforgoodbusiness.engine.backend.DHTBackend;
 import com.goodforgoodbusiness.engine.crypto.key.EncodeableSecretKey;
 import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
 import com.goodforgoodbusiness.engine.store.keys.ShareKeyStore;
+import com.goodforgoodbusiness.kpabe.KPABEDecryption;
+import com.goodforgoodbusiness.kpabe.KPABEEncryption;
 import com.goodforgoodbusiness.kpabe.KPABEException;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
-import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.Pointer;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory;
@@ -124,7 +125,7 @@ public class Warp {
 	 */
 	private String encrypt(Pointer pointer, String accessPolicy) throws KPABEException {
 		try (var timer = timer(KPABE_ENCRYPT)) {
-			return shareManager.getCurrentABE().encrypt(JSON.encodeToString(pointer), accessPolicy);
+			return KPABEEncryption.getInstance(shareManager.getCurrentKeys()).encrypt(JSON.encodeToString(pointer), accessPolicy);
 		}
 	}
 	
@@ -142,7 +143,8 @@ public class Warp {
 					.map(EncodeableShareKey::toKeyPair)
 					.map(keyPair -> {
 						try {
-							var result = KPABELocalInstance.decrypt(data, keyPair);
+							var dec = KPABEDecryption.getInstance();
+							var result = dec.decrypt(data, keyPair);
 							if (result != null) {
 								log.debug("Decrypt success");
 							}

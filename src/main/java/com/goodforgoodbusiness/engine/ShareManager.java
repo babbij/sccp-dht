@@ -4,10 +4,12 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
+import com.goodforgoodbusiness.kpabe.KPABEEncryption;
 import com.goodforgoodbusiness.kpabe.KPABEException;
+import com.goodforgoodbusiness.kpabe.KPABEKeyManager;
+import com.goodforgoodbusiness.kpabe.key.KPABEKeyPair;
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.kpabe.key.KPABESecretKey;
-import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.TriTuple;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -19,12 +21,10 @@ import com.google.inject.name.Named;
  */
 @Singleton
 public class ShareManager {
-	private final KPABEPublicKey publicKey;
-	private final KPABESecretKey secretKey;
+	private final KPABEKeyPair keyPair;
 	
 	public ShareManager(KPABEPublicKey publicKey, KPABESecretKey secretKey) {
-		this.publicKey = publicKey;
-		this.secretKey = secretKey;
+		this.keyPair = KPABEKeyManager.ofKeys(publicKey, secretKey);
 	}
 	
 	@Inject
@@ -36,14 +36,14 @@ public class ShareManager {
 	 * Returns the public key to use as the creator key when publishing containers
 	 */
 	public KPABEPublicKey getCreatorKey() {
-		return publicKey;
+		return keyPair.getPublic();
 	}	
 
 	/**
 	 * Returns instance of KP-ABE for currently in use public key
 	 */
-	public KPABELocalInstance getCurrentABE() {
-		return KPABELocalInstance.forKeys(publicKey, secretKey);
+	public KPABEKeyPair getCurrentKeys() {
+		return keyPair;
 	}
 	
 	/**
@@ -53,11 +53,12 @@ public class ShareManager {
 	public EncodeableShareKey newShareKey(TriTuple pattern, Optional<ZonedDateTime> start, Optional<ZonedDateTime> end)
 		throws KPABEException {
 		
-		var kpabe = getCurrentABE(); // XXX: will need to work out what key was in use during the time range?
+		// XXX: will need to work out what key was in use during the time range?
+		var kpabe = KPABEEncryption.getInstance(getCurrentKeys());
 		
 		return new EncodeableShareKey(
 			kpabe.shareKey(
-				Attributes.forShare(kpabe.getPublicKey(), pattern, start, end)
+				Attributes.forShare(keyPair.getPublic(), pattern, start, end)
 			)
 		);
 	}

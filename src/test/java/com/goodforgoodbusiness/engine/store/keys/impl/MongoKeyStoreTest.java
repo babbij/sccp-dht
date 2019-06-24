@@ -10,12 +10,14 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
 import com.goodforgoodbusiness.engine.crypto.key.EncodeableShareKey;
-import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
+import com.goodforgoodbusiness.kpabe.KPABEEncryption;
+import com.goodforgoodbusiness.kpabe.KPABEKeyManager;
 import com.goodforgoodbusiness.model.TriTuple;
 
 public class MongoKeyStoreTest {
 	public static void main(String[] args) throws Exception {
-		var kpabe = KPABELocalInstance.newKeys();
+		var keys = KPABEKeyManager.newKeys();
+		var kpabe = KPABEEncryption.getInstance(keys);
 		
 		// make random sharekey
 		var keyPair = kpabe.shareKey("foo");
