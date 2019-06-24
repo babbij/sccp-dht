@@ -1,5 +1,8 @@
 package com.goodforgoodbusiness.engine.warp;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DHT_PUBLISH_WARP;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.KPABE_ENCRYPT;
 import static java.util.Collections.singleton;
 
 import java.security.InvalidKeyException;
@@ -22,6 +25,7 @@ import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
 import com.goodforgoodbusiness.kpabe.local.KPABELocalInstance;
 import com.goodforgoodbusiness.model.Pointer;
 import com.goodforgoodbusiness.model.TriTuple;
+import com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -58,7 +62,7 @@ public class Warp {
 	public Optional<WarpPublishResult> publish(String containerId, String pattern, String accessPolicy, EncodeableSecretKey secretKey) {
 		log.debug("Publishing warp pattern: " + pattern);
 			
-		try {
+		try (var timer = timer(DHT_PUBLISH_WARP)) {
 			var pointer = new Pointer(
 				containerId,
 				secretKey.toEncodedString(),
@@ -119,7 +123,9 @@ public class Warp {
 	 * Encrypt a pointer
 	 */
 	private String encrypt(Pointer pointer, String accessPolicy) throws KPABEException {
-		return shareManager.getCurrentABE().encrypt(JSON.encodeToString(pointer), accessPolicy);
+		try (var timer = timer(KPABE_ENCRYPT)) {
+			return shareManager.getCurrentABE().encrypt(JSON.encodeToString(pointer), accessPolicy);
+		}
 	}
 	
 	/**
@@ -129,30 +135,32 @@ public class Warp {
 	private Optional<Pointer> decrypt(KPABEPublicKey creator, TriTuple pattern, String data) {
 		log.info("Got data for " + pattern + " from " + creator.toString().substring(0, 10) + "...");
 		
-		return
-			keyStore.keysForDecrypt(creator, pattern) // XXX think about expiry?
-				.parallel()
-				.map(EncodeableShareKey::toKeyPair)
-				.map(keyPair -> {
-					try {
-						var result = KPABELocalInstance.decrypt(data, keyPair);
-						if (result != null) {
-							log.debug("Decrypt success");
+		try (var timer = timer(TimingCategory.KPABE_DECRYPT)) {
+			return
+				keyStore.keysForDecrypt(creator, pattern) // XXX think about expiry?
+					.parallel()
+					.map(EncodeableShareKey::toKeyPair)
+					.map(keyPair -> {
+						try {
+							var result = KPABELocalInstance.decrypt(data, keyPair);
+							if (result != null) {
+								log.debug("Decrypt success");
+							}
+							else {
+								log.debug("Decrypt failure (this can be normal)");
+							}
+							
+							return result;
 						}
-						else {
-							log.debug("Decrypt failure (this can be normal)");
+						catch (KPABEException | InvalidKeyException e) {
+							log.error("Error decrypting pointer", e);
+							return null;
 						}
-						
-						return result;
-					}
-					catch (KPABEException | InvalidKeyException e) {
-						log.error("Error decrypting pointer", e);
-						return null;
-					}
-				})
-				.filter(Objects::nonNull)
-				.findFirst()
-				.map(json -> JSON.decode(json, Pointer.class))
-			;
+					})
+					.filter(Objects::nonNull)
+					.findFirst()
+					.map(json -> JSON.decode(json, Pointer.class))
+				;
+		}
 	}
 }

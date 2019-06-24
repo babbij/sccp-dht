@@ -1,5 +1,7 @@
 package com.goodforgoodbusiness.engine;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DHT_SEARCH;
 import static java.util.stream.Stream.empty;
 
 import java.util.HashSet;
@@ -43,34 +45,36 @@ public class Searcher {
 	 */
 	public Stream<StorableContainer> search(TriTuple tuple, boolean saveToLocal) {
 		if (governor.allow(tuple)) {
-			log.info("DHT searching for " + tuple);
+			log.debug("DHT searching for " + tuple);
 
 			// process the stream because these operations have side effects.
 			var containers = new HashSet<StorableContainer>();
 			
-			warp.search(tuple)
-				// only work on containers we've not already seen/stored.
-				.filter(pointer -> !store.contains(pointer.getContainerId()))
-				.flatMap(pointer -> {
-					try {
-						// attempt fetch & decrypt
-						return weft.fetch(
-							pointer.getContainerId(),
-							new EncodeableSecretKey(pointer.getContainerKey())
-						).stream(); // stream so it's just non-empty Optionals
-					}
-					catch (EncryptionException e) {
-						log.error("Couldn not decrypt container", e);
-						return Stream.empty();
-					}
-				})
-				.forEach(container -> {
-					if (saveToLocal) {
-						store.save(container);
-					}
-					
-					containers.add(container);
-				});
+			try (var timer = timer(DHT_SEARCH)) {
+				warp.search(tuple)
+					// only work on containers we've not already seen/stored.
+					.filter(pointer -> !store.contains(pointer.getContainerId()))
+					.flatMap(pointer -> {
+						try {
+							// attempt fetch & decrypt
+							return weft.fetch(
+								pointer.getContainerId(),
+								new EncodeableSecretKey(pointer.getContainerKey())
+							).stream(); // stream so it's just non-empty Optionals
+						}
+						catch (EncryptionException e) {
+							log.error("Couldn not decrypt container", e);
+							return Stream.empty();
+						}
+					})
+					.forEach(container -> {
+						if (saveToLocal) {
+							store.save(container);
+						}
+						
+						containers.add(container);
+					});
+			}
 			
 			log.debug("Results found = " + containers.size());
 			return containers.parallelStream();

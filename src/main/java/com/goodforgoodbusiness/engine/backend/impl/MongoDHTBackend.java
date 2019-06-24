@@ -1,8 +1,10 @@
 package com.goodforgoodbusiness.engine.backend.impl;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DATABASE;
 import static com.mongodb.client.model.Filters.eq;
-import static java.util.stream.StreamSupport.stream;
 import static com.mongodb.client.model.Indexes.ascending;
+import static java.util.stream.StreamSupport.stream;
 
 import java.util.Optional;
 import java.util.Set;
@@ -52,40 +54,46 @@ public class MongoDHTBackend implements DHTBackend {
 
 	@Override
 	public Optional<String> publish(Set<String> keywords, String data) {
-		var doc = new Document("data", data);
-		data().insertOne(doc);
-		
-		var docId = (ObjectId)doc.get( "_id" );
-		log.debug("Published doc " + docId);
-		
-		keywords.forEach(keyword -> {
-			log.debug("Keyword " + keyword + " -> " + docId);
-			keys().insertOne(new Document("key", keyword).append("doc", docId));
-		});
-		
-		return Optional.of(docId.toHexString());
+		try (var timer = timer(DATABASE)) {
+			var doc = new Document("data", data);
+			data().insertOne(doc);
+			
+			var docId = (ObjectId)doc.get( "_id" );
+			log.debug("Published doc " + docId);
+			
+			keywords.forEach(keyword -> {
+				log.debug("Keyword " + keyword + " -> " + docId);
+				keys().insertOne(new Document("key", keyword).append("doc", docId));
+			});
+			
+			return Optional.of(docId.toHexString());
+		}
 	}
 	
 	@Override
 	public Stream<String> search(String keyword) {
 		log.debug("Search for keyword " + keyword);
 		
-		return 
-			stream(
-				keys().find( eq("key", keyword) ).spliterator(),
-				true
-			)
-			.map(doc -> ((ObjectId)doc.get("doc")).toHexString())
-		;
+		try (var timer = timer(DATABASE)) {
+			return 
+				stream(
+					keys().find( eq("key", keyword) ).spliterator(),
+					true
+				)
+				.map(doc -> ((ObjectId)doc.get("doc")).toHexString())
+			;
+		}
 	}
 
 	@Override
 	public Optional<String> fetch(String location) {
 		log.debug("Fetch doc " + location);
 		
-		return Optional
-			.ofNullable(data().find(eq("_id", new ObjectId(location))).first())
-			.map(doc -> doc.get("data").toString())
-		;
+		try (var timer = timer(DATABASE)) {
+			return Optional
+				.ofNullable(data().find(eq("_id", new ObjectId(location))).first())
+				.map(doc -> doc.get("data").toString())
+			;
+		}
 	}
 }

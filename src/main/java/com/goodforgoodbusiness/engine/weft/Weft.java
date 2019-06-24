@@ -1,5 +1,7 @@
 package com.goodforgoodbusiness.engine.weft;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DHT_PUBLISH_WEFT;
 import static java.util.Collections.singleton;
 
 import java.util.Optional;
@@ -16,6 +18,8 @@ import com.goodforgoodbusiness.model.EncryptedContainer;
 import com.goodforgoodbusiness.model.EncryptedEnvelope;
 import com.goodforgoodbusiness.model.Envelope;
 import com.goodforgoodbusiness.model.StorableContainer;
+import com.goodforgoodbusiness.shared.TimingRecorder;
+import com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory;
 import com.goodforgoodbusiness.shared.encode.JSON;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -38,25 +42,27 @@ public class Weft {
 	 * Push a container on to the {@link Weft}.
 	 */
 	public Optional<WeftPublishResult> publish(StorableContainer container) throws EncryptionException {
-		var secretKey = SymmetricEncryption.createKey();
-		
-		var encryptedContainer = encrypt(container, secretKey);
-		var data = JSON.encodeToString(encryptedContainer);
-		var location = backend.publish(singleton(encryptedContainer.getId()), data);
-		
-		if (location.isPresent()) {
-			return Optional.of(
-				new WeftPublishResult(
-					secretKey,
-					encryptedContainer,
-					location.get(),
-					data
-				)
-			);
-		}
-		else {
-			log.error("Unable to publish");
-			return Optional.empty();
+		try (var timer = timer(DHT_PUBLISH_WEFT)) {
+			var secretKey = SymmetricEncryption.createKey();
+			
+			var encryptedContainer = encrypt(container, secretKey);
+			var data = JSON.encodeToString(encryptedContainer);
+			var location = backend.publish(singleton(encryptedContainer.getId()), data);
+			
+			if (location.isPresent()) {
+				return Optional.of(
+					new WeftPublishResult(
+						secretKey,
+						encryptedContainer,
+						location.get(),
+						data
+					)
+				);
+			}
+			else {
+				log.error("Unable to publish");
+				return Optional.empty();
+			}
 		}
 	}
 	
@@ -94,39 +100,43 @@ public class Weft {
 	private static EncryptedContainer encrypt(StorableContainer container, SecretKey secretKey) throws EncryptionException {
 		var contents = JSON.encodeToString(container.getInnerEnvelope().getContents());
 		
-		// encryption round 1: convergent encryption (using id)
-		var encryptRound1 = SymmetricEncryption.encrypt(contents, container.getConvergentKey());
-		
-		// encryption round 2: secret key
-		var encryptRound2 = SymmetricEncryption.encrypt(encryptRound1, secretKey);
-		
-		return new EncryptedContainer(
-			new EncryptedEnvelope(
-				container.getId(),
-				encryptRound2,
-				container.getInnerEnvelope().getLinkVerifier(),
-				container.getInnerEnvelope().getSignature()
-			),
-			container.getLinks(),
-			container.getSignature()
-		);
+		try (var timer = TimingRecorder.timer(TimingCategory.SYMMETRIC_ENCRYPT)) {
+			// encryption round 1: convergent encryption (using id)
+			var encryptRound1 = SymmetricEncryption.encrypt(contents, container.getConvergentKey());
+			
+			// encryption round 2: secret key
+			var encryptRound2 = SymmetricEncryption.encrypt(encryptRound1, secretKey);
+			
+			return new EncryptedContainer(
+				new EncryptedEnvelope(
+					container.getId(),
+					encryptRound2,
+					container.getInnerEnvelope().getLinkVerifier(),
+					container.getInnerEnvelope().getSignature()
+				),
+				container.getLinks(),
+				container.getSignature()
+			);
+		}
 	}
 	
-	private static StorableContainer decrypt(EncryptedContainer container, SecretKey secretKey) throws EncryptionException {	
-		// decryption round 1: secret key
-		var decryptRound1 = SymmetricEncryption.decrypt(container.getInnerEnvelope().getContents(), secretKey);
+	private static StorableContainer decrypt(EncryptedContainer container, SecretKey secretKey) throws EncryptionException {
+		try (var timer = TimingRecorder.timer(TimingCategory.SYMMETRIC_DECRYPT)) {
+			// decryption round 1: secret key
+			var decryptRound1 = SymmetricEncryption.decrypt(container.getInnerEnvelope().getContents(), secretKey);
+			
+			// decryption round 2: convergent encryption (using id)
+			var decryptRound2 = SymmetricEncryption.decrypt(decryptRound1, container.getConvergentKey());
 		
-		// decryption round 2: convergent encryption (using id)
-		var decryptRound2 = SymmetricEncryption.decrypt(decryptRound1, container.getConvergentKey());
-		
-		return new StorableContainer(
-			new Envelope(
-				JSON.decode(decryptRound2, Contents.class),
-				container.getInnerEnvelope().getLinkVerifier(),
-				container.getInnerEnvelope().getSignature()
-			),
-			container.getLinks(),
-			container.getSignature()
-		);
+			return new StorableContainer(
+				new Envelope(
+					JSON.decode(decryptRound2, Contents.class),
+					container.getInnerEnvelope().getLinkVerifier(),
+					container.getInnerEnvelope().getSignature()
+				),
+				container.getLinks(),
+				container.getSignature()
+			);
+		}
 	}
 }

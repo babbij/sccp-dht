@@ -41,6 +41,7 @@ public class EngineModule extends AbstractModule {
 	private static final Logger log = Logger.getLogger(EngineModule.class);
 	
 	private final Configuration config;
+	private Webapp webapp = null;
 	
 	public EngineModule(Configuration config) {
 		this.config = config;
@@ -79,7 +80,7 @@ public class EngineModule extends AbstractModule {
 			
 			bind(ShareKeyStore.class).to(MongoKeyStore.class);
 			
-			if (config.getBoolean("claimstore.cache.enabled", false)) {
+			if (config.getBoolean("containerstore.cache.enabled", false)) {
 				bind(ContainerStore.class).to(CachingContainerStore.class);
 				bind(ContainerStore.class).annotatedWith(Underlying.class).to(MongoContainerStore.class);
 			}
@@ -104,13 +105,16 @@ public class EngineModule extends AbstractModule {
 		}
 	}
 	
+	public void start() {
+		var injector = createInjector(this);
+		
+		this.webapp = injector.getInstance(Webapp.class);
+		this.webapp.start();
+	}
+	
 	public static void main(String[] args) throws Exception {
 		var config = loadConfig(EngineModule.class, args.length > 0 ? args[0] : "env.properties");
 		LogConfigurer.init(EngineModule.class, config.getString("log.properties", "log4j.properties"));
-		
-		createInjector(new EngineModule(config))
-			.getInstance(Webapp.class)
-			.start()
-		;
+		new EngineModule(config).start();
 	}
 }

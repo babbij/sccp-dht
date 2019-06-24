@@ -1,12 +1,13 @@
 package com.goodforgoodbusiness.engine;
 
 import static java.time.ZonedDateTime.now;
-import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.kpabe.key.KPABEPublicKey;
@@ -45,14 +46,18 @@ public final class Attributes {
 	 * Put a prefix on each attribute to avoid issues with OpenABE (which doesn't like attributes beginning with numbers).
 	 */
 	public static String forPublish(KPABEPublicKey key, Stream<TriTuple> tuples) {
-		var attributes = tuples
+		var attributeList = tuples
 			.parallel()
 			.flatMap(TriTuple::matchingCombinations)
 			// for DHT publish, tuple pattern must have either defined subject or defined object
 			.filter(tt -> tt.getSubject().isPresent() || tt.getObject().isPresent())
 			.map(tt -> hash(key, tt))
-			.collect(joining("|"))
+			.collect(toList())
 		;
+		
+		log.debug(attributeList.size() + " attributes identified");
+		
+		var attributes = StringUtils.join(attributeList, "|");
 		
 		// add epoch as additional attribute & return
 		attributes += "|time = " + toTimeRepresentation(now());

@@ -1,5 +1,8 @@
 package com.goodforgoodbusiness.engine;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DHT_PUBLISH;
+
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.crypto.EncryptionException;
@@ -36,22 +39,28 @@ public class Publisher {
 	public boolean publish(StorableContainer container) throws EncryptionException {
 		log.debug("Publishing container: " + container.getId());
 		
-		// encrypt with secret key + publish to weft
-		var publishResult = weft.publish(container);
-		
-		if (publishResult.isPresent()) {
-			// pointer should be encrypted with _all_ the possible patterns + other attributes
-			var attributes = Attributes.forPublish(keyManager.getCreatorKey(), container.getTriples().map(t -> TriTuple.from(t)));
+		try (var timer = timer(DHT_PUBLISH)) {
+			// encrypt with secret key + publish to weft
+			var publishResult = weft.publish(container);
 			
-			// patterns to publish are all possible triple combinations
-			// create + publish a pointer for each generated pattern
-			container.getTriples()
-				.flatMap(t -> Patterns.forPublish(keyManager, TriTuple.from(t)))
-				.forEach(pattern -> warp.publish(container.getId(), pattern, attributes, publishResult.get().getKey()))
-			;
-			
-			
-			return true;
+			if (publishResult.isPresent()) {
+				// pointer should be encrypted with _all_ the possible patterns + other attributes
+				var attributes = Attributes.forPublish(keyManager.getCreatorKey(), container.getTriples().map(t -> TriTuple.from(t)));
+				
+				if (log.isDebugEnabled()) {
+					log.debug("Container contains " + container.getTriples().count() + " triples");
+				}
+				
+				// patterns to publish are all possible triple combinations
+				// create + publish a pointer for each generated pattern
+				container.getTriples()
+					.flatMap(t -> Patterns.forPublish(keyManager, TriTuple.from(t)))
+					.forEach(pattern -> warp.publish(container.getId(), pattern, attributes, publishResult.get().getKey()))
+				;
+				
+				
+				return true;
+			}
 		}
 		
 		return false; // could not publish

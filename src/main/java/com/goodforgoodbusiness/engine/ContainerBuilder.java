@@ -1,6 +1,8 @@
 package com.goodforgoodbusiness.engine;
 
 import static com.goodforgoodbusiness.engine.crypto.AsymmetricEncryption.sign;
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.SIGNING;
 import static java.util.stream.Collectors.toList;
 
 import java.security.PrivateKey;
@@ -93,7 +95,9 @@ public class ContainerBuilder {
 	}
 	
 	private static String signature(Identity identity, Object... objects) throws EncryptionException {
-		return identity.sign(CBOR.forObject(objects));
+		try (var timer = timer(SIGNING)) {
+			return identity.sign(CBOR.forObject(objects));
+		}
 	}
 	
 	private static String antecedent(Link link, PrivateKey privateKey) {

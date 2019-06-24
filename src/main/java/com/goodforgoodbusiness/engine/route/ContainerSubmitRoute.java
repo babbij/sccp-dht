@@ -1,5 +1,8 @@
 package com.goodforgoodbusiness.engine.route;
 
+import static com.goodforgoodbusiness.shared.TimingRecorder.timer;
+import static com.goodforgoodbusiness.shared.TimingRecorder.TimingCategory.DHT_ROUTE_SUBMIT;
+
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.engine.ContainerBuilder;
@@ -38,9 +41,13 @@ public class ContainerSubmitRoute implements Route {
 		var container = builder.buildFrom(JSON.decode(req.body(), SubmittableContainer.class));
 		log.info("Processing posted container: " + container);
 		
-		// store locally + push to DHt
-		store.save(container);
-		publisher.publish(container);
+		try (var timer = timer(DHT_ROUTE_SUBMIT)) {
+			// store locally + push to DHt
+			store.save(container);
+			publisher.publish(container);
+		}
+		
+		log.info("Finished publishing container: " + container);
 		
 		// result is { "id" : <hash> }
 		var o = new JsonObject();
