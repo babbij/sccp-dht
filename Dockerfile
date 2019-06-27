@@ -4,9 +4,11 @@ WORKDIR /build
 # add the pom.xmls
 # download all dependencies
 COPY ./pom.xml /build/pom.xml
+COPY ./bridge/pom.xml /build/bridge/pom.xml
 COPY ./dhtengine/pom.xml /build/dhtengine/pom.xml
 COPY ./rdfendpoint/pom.xml /build/rdfendpoint/pom.xml
 COPY ./utils/pom.xml /build/utils/pom.xml
+COPY ./test/pom.xml /build/test/pom.xml
 
 COPY ./lib/pom.xml /build/lib/pom.xml
 
