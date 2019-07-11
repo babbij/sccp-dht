@@ -42,8 +42,6 @@ public class MatchSearchRoute implements Route {
 	
 	@Override
 	public Object handle(Request req, Response res) throws Exception {
-		res.type(ContentType.json.getContentTypeString());
-		
 		var tuple = JSON.decode(req.queryParams("pattern"), TriTuple.class);
 		if (tuple != null) {
 			log.debug("Matches called for " + tuple);

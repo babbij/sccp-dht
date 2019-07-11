@@ -41,7 +41,6 @@ public class EngineModule extends AbstractModule {
 	private static final Logger log = Logger.getLogger(EngineModule.class);
 	
 	private final Configuration config;
-	private Webapp webapp = null;
 	
 	public EngineModule(Configuration config) {
 		this.config = config;
@@ -55,17 +54,8 @@ public class EngineModule extends AbstractModule {
 			Properties props = getProperties(config);
 			Names.bindProperties(binder(), props);
 			
-			bind(Identity.class);
-			
 			bind(Governer.class);
-			bind(Publisher.class);
 			bind(Searcher.class);
-			bind(ContainerBuilder.class);
-			
-			bind(Warp.class);
-			bind(Weft.class);
-			
-			bind(ShareManager.class);
 			
 			if (config.containsKey("backend.impl")) {
 				var backendClazz = DHTBackendOption.valueOf(config.getString("backend.impl"));
@@ -77,28 +67,6 @@ public class EngineModule extends AbstractModule {
 			else {
 				throw new IllegalArgumentException("backend.impl was null");
 			}
-			
-			bind(ShareKeyStore.class).to(MongoKeyStore.class);
-			
-			if (config.getBoolean("containerstore.cache.enabled", false)) {
-				bind(ContainerStore.class).to(CachingContainerStore.class);
-				bind(ContainerStore.class).annotatedWith(Underlying.class).to(MongoContainerStore.class);
-			}
-			else {
-				log.warn("Container cache is DISABLED");
-				bind(ContainerStore.class).to(MongoContainerStore.class);
-			}
-			
-			bind(Webapp.class);
-			
-			var routes = newMapBinder(binder(), Resource.class, Route.class);
-			
-			routes.addBinding(get("/ping")).to(PingRoute.class);
-			
-			routes.addBinding(get("/matches")).to(MatchSearchRoute.class);
-			routes.addBinding(post("/containers")).to(ContainerSubmitRoute.class);
-			routes.addBinding(get("/share")).to(ShareRequestRoute.class);
-			routes.addBinding(post("/share")).to(ShareAcceptRoute.class);
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
@@ -108,8 +76,8 @@ public class EngineModule extends AbstractModule {
 	public void start() {
 		var injector = createInjector(this);
 		
-		this.webapp = injector.getInstance(Webapp.class);
-		this.webapp.start();
+//		this.webapp = injector.getInstance(Webapp.class);
+//		this.webapp.start();
 	}
 	
 	public static void main(String[] args) throws Exception {
