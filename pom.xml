@@ -1,63 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.goodforgoodbusiness</groupId>
+		<groupId>com.colabriq</groupId>
 		<artifactId>sccp</artifactId>
 		<version>0.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>dhtengine</artifactId>
-	<version>0.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>SCCP DHT Engine</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.goodforgoodbusiness</groupId>
+			<groupId>com.colabriq</groupId>
 			<artifactId>shared</artifactId>
 			<version>0.2-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>org.goodforgoodbusiness</groupId>
+			<groupId>com.colabriq</groupId>
 			<artifactId>model</artifactId>
 			<version>0.2-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>org.goodforgoodbusiness</groupId>
+			<groupId>com.colabriq</groupId>
 			<artifactId>webapp</artifactId>
 			<version>0.2-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
-			<groupId>org.goodforgoodbusiness</groupId>
+			<groupId>com.colabriq</groupId>
 			<artifactId>kpabe</artifactId>
+			<version>0.2-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.colabriq</groupId>
+			<artifactId>proto</artifactId>
+			<version>0.2-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.colabriq</groupId>
+			<artifactId>rpclib</artifactId>
+			<version>0.2-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.colabriq</groupId>
+			<artifactId>rocks</artifactId>
 			<version>0.2-SNAPSHOT</version>
 		</dependency>
     
 		<dependency>
 		    <groupId>com.google.inject</groupId>
 		    <artifactId>guice</artifactId>
-		    <version>4.2.2</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>com.google.protobuf</groupId>
-		    <artifactId>protobuf-java</artifactId>
-		    <version>3.8.0</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>com.google.protobuf</groupId>
-		    <artifactId>protoc</artifactId>
-		    <version>3.8.0</version>
-		    <type>pom</type>
+		    <version>${guice.version}</version>
 		</dependency>
     
 		<dependency>
@@ -71,36 +73,6 @@
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-text</artifactId>
 			<version>${jena.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.sparkjava</groupId>
-			<artifactId>spark-core</artifactId>
-			<version>2.7.2</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.5</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-cbor</artifactId>
-			<version>2.9.8</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-			<version>5.2.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver-sync</artifactId>
-			<version>3.9.1</version>
 		</dependency>
 	</dependencies>
 
@@ -124,78 +96,15 @@
 			</testResource>
 		</testResources>
 		
-		<extensions>
-        	<!-- provides os.detected.classifier (i.e. linux-x86_64, osx-x86_64) property -->
-        	<extension>
-	            <groupId>kr.motd.maven</groupId>
-	            <artifactId>os-maven-plugin</artifactId>
-	            <version>1.4.1.Final</version>
-        	</extension>
-    	</extensions>
-		
 		<plugins>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>com.goodforgoodbusiness.engine.EngineModule</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-dependency-plugin</artifactId>
-			    <version>2.10</version>
-			    <executions>
-			        <execution>
-			            <id>copy-protoc</id>
-			            <phase>generate-sources</phase>
-			            <goals>
-			                <goal>copy</goal>
-			            </goals>
-			            <configuration>
-			                <artifactItems>
-			                    <artifactItem>
-			                        <groupId>com.google.protobuf</groupId>
-			                        <artifactId>protoc</artifactId>
-			                        <version>3.8.0</version>
-			                        <classifier>${os.detected.classifier}</classifier>
-			                        <type>exe</type>
-			                        <overWrite>true</overWrite>
-			                        <outputDirectory>${project.build.directory}</outputDirectory>
-			                    </artifactItem>
-			                </artifactItems>
-			            </configuration>
-			        </execution>
-			    </executions>
-			</plugin>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-					<encoding>${project.build.sourceEncoding}</encoding>
-				</configuration>
 			</plugin>
 			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<buildOutputDirectory>${project.build.directory}/classes</buildOutputDirectory>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>false</downloadJavadocs>
-					<useProjectReferences>false</useProjectReferences>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
