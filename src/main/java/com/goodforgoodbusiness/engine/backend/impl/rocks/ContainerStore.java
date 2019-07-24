@@ -72,7 +72,7 @@ public class ContainerStore implements Weft {
 			throw new WeftException(e);
 		}
 	}
-
+	
 	@Override
 	public Stream<String> searchForContainer(String id) throws WeftException {
 		if (log.isDebugEnabled()) {
@@ -83,13 +83,10 @@ public class ContainerStore implements Weft {
 		// this will return a combination of localhost and remote matches
 		
 		try {
-			var iterator = new PrefixIterator(rocks.newIterator(locationCFH), id.getBytes());
-			final Iterable<Row> iterable = () -> iterator;
-			
-			var stream = StreamSupport.stream(iterable.spliterator(), false);
-			stream.onClose(() -> iterator.close());
-			
-			return stream.map(row -> new String(row.val));
+			return new PrefixIterator(rocks.newIterator(locationCFH), id.getBytes())
+				.stream()
+				.map(row -> new String(row.val))
+			;
 		}
 		catch (RocksDBException e) {
 			throw new WeftException(e);

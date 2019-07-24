@@ -2,7 +2,6 @@ package com.goodforgoodbusiness.engine.backend.impl.rocks;
 
 import java.util.Random;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.log4j.Logger;
 import org.rocksdb.ColumnFamilyHandle;
@@ -12,7 +11,6 @@ import com.goodforgoodbusiness.engine.backend.Warp;
 import com.goodforgoodbusiness.engine.backend.WarpException;
 import com.goodforgoodbusiness.engine.backend.Weft;
 import com.goodforgoodbusiness.rocks.PrefixIterator;
-import com.goodforgoodbusiness.rocks.PrefixIterator.Row;
 import com.goodforgoodbusiness.rocks.RocksManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -65,13 +63,10 @@ public class PointerStore implements Warp {
 		}
 		
 		try {
-			var iterator = new PrefixIterator(rocks.newIterator(cfh), pattern.getBytes());
-			final Iterable<Row> iterable = () -> iterator;
-			
-			var stream = StreamSupport.stream(iterable.spliterator(), false);
-			stream.onClose(() -> iterator.close());
-			
-			return stream.map(row -> row.val);
+			return new PrefixIterator(rocks.newIterator(cfh), pattern.getBytes())
+				.stream()
+				.map(row -> row.val)
+			;
 		}
 		catch (RocksDBException e) {
 			throw new WarpException(e);
