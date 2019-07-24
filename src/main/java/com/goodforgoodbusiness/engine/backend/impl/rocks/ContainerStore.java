@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.log4j.Logger;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 
@@ -24,6 +25,8 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class ContainerStore implements Weft {
+	private static final Logger log = Logger.getLogger(ContainerStore.class);
+	
 	private static final Random RANDOM = new Random();
 	
 	private static final byte [] LOCATION_CFH = "LOCATIONS".getBytes();
@@ -41,6 +44,10 @@ public class ContainerStore implements Weft {
 	
 	@Override
 	public String publishContainer(String id, byte[] data) throws WeftException {
+		if (log.isDebugEnabled()) {
+			log.debug("Publish container: " + id);
+		}
+		
 		// create a location for the container.
 		// TODO: actually publish there!
 		var location = "/localhost/" + UUID.randomUUID();
@@ -68,6 +75,10 @@ public class ContainerStore implements Weft {
 
 	@Override
 	public Stream<String> searchForContainer(String id) throws WeftException {
+		if (log.isDebugEnabled()) {
+			log.debug("Search for container: " + id);
+		}
+		
 		// look for any known locations for this ID
 		// this will return a combination of localhost and remote matches
 		
@@ -87,6 +98,10 @@ public class ContainerStore implements Weft {
 
 	@Override
 	public Optional<byte[]> fetchContainer(String location) throws WeftException {
+		if (log.isDebugEnabled()) {
+			log.debug("Fetch container: " + location);
+		}
+		
 		try {
 			return Optional.ofNullable(rocks.get(dataCFH, location.getBytes()));
 		}

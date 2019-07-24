@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.log4j.Logger;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 
@@ -21,6 +22,8 @@ import com.google.inject.Singleton;
  */
 @Singleton
 public class PointerStore implements Warp {
+	private static final Logger log = Logger.getLogger(PointerStore.class);
+	
 	private static final Random RANDOM = new Random();
 	private static final byte [] POINTERS_CFH = "POINTERS".getBytes();
 	
@@ -35,6 +38,10 @@ public class PointerStore implements Warp {
 	
 	@Override
 	public void publishPointer(String pattern, byte[] data) throws WarpException {
+		if (log.isDebugEnabled()) {
+			log.debug("Publish pointer: " + pattern);
+		}
+		
 		// need to add a random suffix to pattern, because values stored in RocksDB are unique
 		
 		var patternBytes = pattern.getBytes();
@@ -53,6 +60,10 @@ public class PointerStore implements Warp {
 
 	@Override
 	public Stream<byte[]> searchForPointers(String pattern) throws WarpException {
+		if (log.isDebugEnabled()) {
+			log.debug("Search for pointers: " + pattern);
+		}
+		
 		try {
 			var iterator = new PrefixIterator(rocks.newIterator(cfh), pattern.getBytes());
 			final Iterable<Row> iterable = () -> iterator;
