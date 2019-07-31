@@ -45,7 +45,7 @@ public class ContainerStore implements Weft {
 	@Override
 	public String publishContainer(String id, byte[] data) throws WeftException {
 		if (log.isDebugEnabled()) {
-			log.debug("Publish container: " + id);
+			log.debug("Publish container: " + id + " (" + data.length + " bytes)");
 		}
 		
 		// create a location for the container.
