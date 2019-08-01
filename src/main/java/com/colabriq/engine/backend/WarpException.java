@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.backend;
+package com.colabriq.engine.backend;
 
 public class WarpException extends Exception {
 	public WarpException(String message, Throwable cause) {

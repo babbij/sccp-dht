@@ -1,9 +1,9 @@
-package com.goodforgoodbusiness.engine.webapp.rpc.call;
+package com.colabriq.engine.webapp.rpc.call;
 
-import com.goodforgoodbusiness.engine.backend.Warp;
-import com.goodforgoodbusiness.proto.DHTProto.PointerPublishRequest;
-import com.goodforgoodbusiness.proto.DHTProto.PointerPublishResponse;
-import com.goodforgoodbusiness.rpclib.server.receiver.RPCReceiverSingleResponse;
+import com.colabriq.engine.backend.Warp;
+import com.colabriq.proto.DHTProto.PointerPublishRequest;
+import com.colabriq.proto.DHTProto.PointerPublishResponse;
+import com.colabriq.rpclib.server.receiver.RPCReceiverSingleResponse;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

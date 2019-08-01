@@ -1,10 +1,10 @@
-package com.goodforgoodbusiness.engine.webapp.rpc;
+package com.colabriq.engine.webapp.rpc;
 
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import com.goodforgoodbusiness.rpclib.server.RPCHandler;
-import com.goodforgoodbusiness.rpclib.server.receiver.RPCReceiver;
+import com.colabriq.rpclib.server.RPCHandler;
+import com.colabriq.rpclib.server.receiver.RPCReceiver;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.backend.impl.rocks;
+package com.colabriq.engine.backend.impl.rocks;
 
 import java.util.Optional;
 import java.util.Random;
@@ -10,11 +10,11 @@ import org.apache.log4j.Logger;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 
-import com.goodforgoodbusiness.engine.backend.Weft;
-import com.goodforgoodbusiness.engine.backend.WeftException;
-import com.goodforgoodbusiness.rocks.PrefixIterator;
-import com.goodforgoodbusiness.rocks.PrefixIterator.Row;
-import com.goodforgoodbusiness.rocks.RocksManager;
+import com.colabriq.engine.backend.Weft;
+import com.colabriq.engine.backend.WeftException;
+import com.colabriq.rocks.PrefixIterator;
+import com.colabriq.rocks.PrefixIterator.Row;
+import com.colabriq.rocks.RocksManager;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 

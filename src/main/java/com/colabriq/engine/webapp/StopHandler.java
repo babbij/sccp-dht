@@ -1,6 +1,6 @@
-package com.goodforgoodbusiness.engine.webapp;
+package com.colabriq.engine.webapp;
 
-import com.goodforgoodbusiness.engine.EngineModule;
+import com.colabriq.engine.EngineModule;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;

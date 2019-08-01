@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.engine.backend;
+package com.colabriq.engine.backend;
 
 public class WeftException extends Exception {
 	public WeftException(String message, Throwable cause) {

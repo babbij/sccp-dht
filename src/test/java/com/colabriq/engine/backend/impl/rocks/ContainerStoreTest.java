@@ -1,8 +1,8 @@
-package com.goodforgoodbusiness.engine.backend.impl.rocks;
+package com.colabriq.engine.backend.impl.rocks;
 
 import java.util.Arrays;
 
-import com.goodforgoodbusiness.rocks.RocksManager;
+import com.colabriq.rocks.RocksManager;
 
 public class ContainerStoreTest {
 	public static void main(String[] args) throws Exception {
