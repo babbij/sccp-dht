@@ -100,7 +100,12 @@ public class ContainerStore implements Weft {
 		}
 		
 		try {
-			return Optional.ofNullable(rocks.get(dataCFH, location.getBytes()));
+			var result = Optional.ofNullable(rocks.get(dataCFH, location.getBytes()));
+			if (log.isDebugEnabled()) {
+				log.debug("Fetch result " + result.isPresent());
+			}
+			
+			return result;
 		}
 		catch (RocksDBException e) {
 			throw new WeftException(e);
