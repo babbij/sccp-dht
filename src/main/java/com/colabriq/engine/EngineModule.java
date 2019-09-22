@@ -133,6 +133,9 @@ public class EngineModule extends AbstractModule {
 	
 	public static void main(String[] args) throws Exception {
 		var config = loadConfig(EngineModule.class, args.length > 0 ? args[0] : "env.properties");
+		
+		System.out.println(config);
+		
 		LogConfigurer.init(EngineModule.class, config.getString("log.properties", "log4j.properties"));
 		new EngineModule(config).start();
 	}
