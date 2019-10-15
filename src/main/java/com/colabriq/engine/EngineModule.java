@@ -39,6 +39,7 @@ import com.google.inject.name.Names;
 
 import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
+import io.vertx.ext.web.handler.BodyHandler;
 
 /**
  * Configure + start up a basic engine module
@@ -100,6 +101,7 @@ public class EngineModule extends AbstractModule {
 		// configure route mappings
 		// fine to use getProvider here because it won't be called until the injector is created
 		bind(HandlerProvider.class).toInstance((router) -> {
+			router.post("/rpc").handler(BodyHandler.create());
 			router.post("/rpc").handler(o(injector, DHTRPCHandler.class));
 		});
 	}
